@@ -88,6 +88,18 @@ func TestCheckFrontmatter_Name(t *testing.T) {
 		results := CheckFrontmatter(s)
 		requireResult(t, results, validator.Pass, `name: "123" (valid)`)
 	})
+
+	t.Run("unicode lowercase name", func(t *testing.T) {
+		s := makeSkill("/tmp/café-tools", "café-tools", "A description")
+		results := CheckFrontmatter(s)
+		requireResult(t, results, validator.Pass, `name: "café-tools" (valid)`)
+	})
+
+	t.Run("unicode uppercase rejected", func(t *testing.T) {
+		s := makeSkill("/tmp/Ñoño", "Ñoño", "A description")
+		results := CheckFrontmatter(s)
+		requireResultContaining(t, results, validator.Error, "must be lowercase alphanumeric")
+	})
 }
 
 func TestCheckFrontmatter_Description(t *testing.T) {

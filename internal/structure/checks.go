@@ -65,6 +65,9 @@ func CheckStructure(dir string) []validator.Result {
 			continue
 		}
 		if !recognizedDirs[name] {
+			// The spec defines scripts/, references/, and assets/ as optional
+			// directories but doesn't prohibit others. Use Info level since
+			// this is guidance, not a spec violation.
 			msg := fmt.Sprintf("unknown directory: %s/", name)
 			if subEntries, err := os.ReadDir(filepath.Join(dir, name)); err == nil {
 				fileCount := 0
@@ -81,7 +84,7 @@ func CheckStructure(dir string) []validator.Result {
 					)
 				}
 			}
-			results = append(results, validator.Result{Level: validator.Warning, Category: "Structure", Message: msg})
+			results = append(results, validator.Result{Level: validator.Info, Category: "Structure", Message: msg})
 		}
 	}
 
@@ -103,6 +106,8 @@ func CheckStructure(dir string) []validator.Result {
 func extraneousFileResult(name string) validator.Result {
 	lower := strings.ToLower(name)
 	if lower == "agents.md" {
+		// AGENTS.md is genuinely misplaced — it's repo-level config that won't
+		// work inside a skill directory. Keep as Warning.
 		return validator.Result{
 			Level:    validator.Warning,
 			Category: "Structure",
@@ -114,25 +119,26 @@ func extraneousFileResult(name string) validator.Result {
 			),
 		}
 	}
+	// The spec only requires SKILL.md and doesn't restrict other root files.
+	// Emit Info-level notices so authors are aware, but don't treat these as
+	// validation problems.
 	if _, known := knownExtraneousFiles[lower]; known {
 		return validator.Result{
-			Level:    validator.Warning,
+			Level:    validator.Info,
 			Category: "Structure",
 			Message: fmt.Sprintf(
-				"%s is not needed in a skill — agents may load it into their context window, "+
-					"taking space from your actual task (Anthropic best practices: skills should only "+
-					"contain files that directly support agent functionality)",
+				"%s is not part of the skill spec — agents may load it into their context window, "+
+					"consider whether it directly supports agent functionality",
 				name,
 			),
 		}
 	}
 	return validator.Result{
-		Level:    validator.Warning,
+		Level:    validator.Info,
 		Category: "Structure",
 		Message: fmt.Sprintf(
-			"unexpected file at root: %s — if agents need this file, move it into "+
-				"references/ or assets/ as appropriate; otherwise remove it to avoid "+
-				"unnecessary context window usage",
+			"extra file at root: %s — if agents need this file, consider moving it into "+
+				"references/ or assets/ so it follows the progressive disclosure pattern",
 			name,
 		),
 	}
@@ -170,10 +176,14 @@ func checkNesting(dir, prefix string) []validator.Result {
 			continue
 		}
 		if entry.IsDir() {
+			// The spec says "Avoid deeply nested reference chains" which is
+			// guidance about reference depth, not directory structure. Subdirs
+			// in recognized dirs are fine; use Info to note them without
+			// treating them as a validation problem.
 			results = append(results, validator.Result{
-				Level:    validator.Warning,
+				Level:    validator.Info,
 				Category: "Structure",
-				Message:  fmt.Sprintf("deep nesting detected: %s/%s/", prefix, entry.Name()),
+				Message:  fmt.Sprintf("nested directory: %s/%s/", prefix, entry.Name()),
 			})
 		}
 	}

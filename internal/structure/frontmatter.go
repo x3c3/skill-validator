@@ -10,7 +10,10 @@ import (
 	"github.com/dacharyc/skill-validator/internal/validator"
 )
 
-var namePattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+// The spec says: "May only contain unicode lowercase alphanumeric characters
+// and hyphens". Use \p{Ll} (Unicode lowercase letters) and \p{Nd} (Unicode
+// decimal digits) to match the full range allowed by the spec.
+var namePattern = regexp.MustCompile(`^[\p{Ll}\p{Nd}]+([-][\p{Ll}\p{Nd}]+)*$`)
 
 func CheckFrontmatter(s *skill.Skill) []validator.Result {
 	var results []validator.Result
