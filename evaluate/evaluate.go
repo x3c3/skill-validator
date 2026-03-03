@@ -55,7 +55,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 
 	// Score SKILL.md
 	if !opts.RefsOnly {
-		fmt.Fprintf(w, "  Scoring %s/SKILL.md...\n", skillName)
+		_, _ = fmt.Fprintf(w, "  Scoring %s/SKILL.md...\n", skillName)
 
 		cacheKey := judge.CacheKey(client.Provider(), client.ModelName(), "skill", skillName, "SKILL.md")
 
@@ -64,7 +64,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 				var scores judge.SkillScores
 				if err := json.Unmarshal(cached.Scores, &scores); err == nil {
 					result.SkillScores = &scores
-					fmt.Fprintf(w, "  Scoring %s/SKILL.md... (cached)\n", skillName)
+					_, _ = fmt.Fprintf(w, "  Scoring %s/SKILL.md... (cached)\n", skillName)
 				}
 			}
 		}
@@ -88,7 +88,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 				Scores:      scoresJSON,
 			}
 			if err := judge.SaveCache(cacheDir, cacheKey, cacheResult); err != nil {
-				fmt.Fprintf(w, "  Warning: could not save cache: %v\n", err)
+				_, _ = fmt.Fprintf(w, "  Warning: could not save cache: %v\n", err)
 			}
 		}
 	}
@@ -108,7 +108,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 
 			for _, name := range names {
 				content := refFiles[name]
-				fmt.Fprintf(w, "  Scoring %s/references/%s...\n", skillName, name)
+				_, _ = fmt.Fprintf(w, "  Scoring %s/references/%s...\n", skillName, name)
 
 				cacheKey := judge.CacheKey(client.Provider(), client.ModelName(), "ref:"+name, skillName, name)
 				var refScores *judge.RefScores
@@ -118,7 +118,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 						var scores judge.RefScores
 						if err := json.Unmarshal(cached.Scores, &scores); err == nil {
 							refScores = &scores
-							fmt.Fprintf(w, "  Scoring %s/references/%s... (cached)\n", skillName, name)
+							_, _ = fmt.Fprintf(w, "  Scoring %s/references/%s... (cached)\n", skillName, name)
 						}
 					}
 				}
@@ -126,7 +126,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 				if refScores == nil {
 					scores, err := judge.ScoreReference(ctx, content, s.Frontmatter.Name, skillDesc, client, opts.MaxLen)
 					if err != nil {
-						fmt.Fprintf(w, "  Error scoring %s: %v\n", name, err)
+						_, _ = fmt.Fprintf(w, "  Error scoring %s: %v\n", name, err)
 						continue
 					}
 					refScores = scores
@@ -142,7 +142,7 @@ func EvaluateSkill(ctx context.Context, dir string, client judge.LLMClient, opts
 						Scores:      scoresJSON,
 					}
 					if err := judge.SaveCache(cacheDir, cacheKey, cacheResult); err != nil {
-						fmt.Fprintf(w, "  Warning: could not save cache: %v\n", err)
+						_, _ = fmt.Fprintf(w, "  Warning: could not save cache: %v\n", err)
 					}
 				}
 
@@ -192,7 +192,7 @@ func EvaluateSingleFile(ctx context.Context, absPath string, client judge.LLMCli
 		skillName = filepath.Base(skillDir)
 	}
 
-	fmt.Fprintf(w, "  Scoring %s (parent: %s)...\n", fileName, skillName)
+	_, _ = fmt.Fprintf(w, "  Scoring %s (parent: %s)...\n", fileName, skillName)
 
 	cacheDir := judge.CacheDir(skillDir)
 	cacheKey := judge.CacheKey(client.Provider(), client.ModelName(), "ref:"+fileName, skillName, fileName)
@@ -201,7 +201,7 @@ func EvaluateSingleFile(ctx context.Context, absPath string, client judge.LLMCli
 		if cached, ok := judge.GetCached(cacheDir, cacheKey); ok {
 			var scores judge.RefScores
 			if err := json.Unmarshal(cached.Scores, &scores); err == nil {
-				fmt.Fprintf(w, "  Scoring %s... (cached)\n", fileName)
+				_, _ = fmt.Fprintf(w, "  Scoring %s... (cached)\n", fileName)
 				result := &EvalResult{
 					SkillDir:   skillDir,
 					RefResults: []RefEvalResult{{File: fileName, Scores: &scores}},
@@ -228,7 +228,7 @@ func EvaluateSingleFile(ctx context.Context, absPath string, client judge.LLMCli
 		Scores:      scoresJSON,
 	}
 	if err := judge.SaveCache(cacheDir, cacheKey, cacheResult); err != nil {
-		fmt.Fprintf(w, "  Warning: could not save cache: %v\n", err)
+		_, _ = fmt.Fprintf(w, "  Warning: could not save cache: %v\n", err)
 	}
 
 	result := &EvalResult{

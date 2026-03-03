@@ -50,7 +50,7 @@ func FormatMultiResults(w io.Writer, results []*EvalResult, format, display stri
 	default:
 		for i, r := range results {
 			if i > 0 {
-				fmt.Fprintf(w, "\n%s\n", strings.Repeat("━", 60))
+				_, _ = fmt.Fprintf(w, "\n%s\n", strings.Repeat("━", 60))
 			}
 			PrintText(w, r, display)
 		}
@@ -60,61 +60,61 @@ func FormatMultiResults(w io.Writer, results []*EvalResult, format, display stri
 
 // PrintText writes a human-readable text representation of an EvalResult.
 func PrintText(w io.Writer, result *EvalResult, display string) {
-	fmt.Fprintf(w, "\n%sScoring skill: %s%s\n", ColorBold, result.SkillDir, ColorReset)
+	_, _ = fmt.Fprintf(w, "\n%sScoring skill: %s%s\n", ColorBold, result.SkillDir, ColorReset)
 
 	if result.SkillScores != nil {
-		fmt.Fprintf(w, "\n%sSKILL.md Scores%s\n", ColorBold, ColorReset)
+		_, _ = fmt.Fprintf(w, "\n%sSKILL.md Scores%s\n", ColorBold, ColorReset)
 		printDimScore(w, "Clarity", result.SkillScores.Clarity)
 		printDimScore(w, "Actionability", result.SkillScores.Actionability)
 		printDimScore(w, "Token Efficiency", result.SkillScores.TokenEfficiency)
 		printDimScore(w, "Scope Discipline", result.SkillScores.ScopeDiscipline)
 		printDimScore(w, "Directive Precision", result.SkillScores.DirectivePrecision)
 		printDimScore(w, "Novelty", result.SkillScores.Novelty)
-		fmt.Fprintf(w, "  %s\n", strings.Repeat("─", 30))
-		fmt.Fprintf(w, "  %sOverall:              %.2f/5%s\n", ColorBold, result.SkillScores.Overall, ColorReset)
+		_, _ = fmt.Fprintf(w, "  %s\n", strings.Repeat("─", 30))
+		_, _ = fmt.Fprintf(w, "  %sOverall:              %.2f/5%s\n", ColorBold, result.SkillScores.Overall, ColorReset)
 
 		if result.SkillScores.BriefAssessment != "" {
-			fmt.Fprintf(w, "\n  %s\"%s\"%s\n", ColorCyan, result.SkillScores.BriefAssessment, ColorReset)
+			_, _ = fmt.Fprintf(w, "\n  %s\"%s\"%s\n", ColorCyan, result.SkillScores.BriefAssessment, ColorReset)
 		}
 
 		if result.SkillScores.NovelInfo != "" {
-			fmt.Fprintf(w, "  %sNovel details: %s%s\n", ColorCyan, result.SkillScores.NovelInfo, ColorReset)
+			_, _ = fmt.Fprintf(w, "  %sNovel details: %s%s\n", ColorCyan, result.SkillScores.NovelInfo, ColorReset)
 		}
 	}
 
 	if display == "files" && len(result.RefResults) > 0 {
 		for _, ref := range result.RefResults {
-			fmt.Fprintf(w, "\n%sReference: %s%s\n", ColorBold, ref.File, ColorReset)
+			_, _ = fmt.Fprintf(w, "\n%sReference: %s%s\n", ColorBold, ref.File, ColorReset)
 			printDimScore(w, "Clarity", ref.Scores.Clarity)
 			printDimScore(w, "Instructional Value", ref.Scores.InstructionalValue)
 			printDimScore(w, "Token Efficiency", ref.Scores.TokenEfficiency)
 			printDimScore(w, "Novelty", ref.Scores.Novelty)
 			printDimScore(w, "Skill Relevance", ref.Scores.SkillRelevance)
-			fmt.Fprintf(w, "  %s\n", strings.Repeat("─", 30))
-			fmt.Fprintf(w, "  %sOverall:              %.2f/5%s\n", ColorBold, ref.Scores.Overall, ColorReset)
+			_, _ = fmt.Fprintf(w, "  %s\n", strings.Repeat("─", 30))
+			_, _ = fmt.Fprintf(w, "  %sOverall:              %.2f/5%s\n", ColorBold, ref.Scores.Overall, ColorReset)
 
 			if ref.Scores.BriefAssessment != "" {
-				fmt.Fprintf(w, "\n  %s\"%s\"%s\n", ColorCyan, ref.Scores.BriefAssessment, ColorReset)
+				_, _ = fmt.Fprintf(w, "\n  %s\"%s\"%s\n", ColorCyan, ref.Scores.BriefAssessment, ColorReset)
 			}
 
 			if ref.Scores.NovelInfo != "" {
-				fmt.Fprintf(w, "  %sNovel details: %s%s\n", ColorCyan, ref.Scores.NovelInfo, ColorReset)
+				_, _ = fmt.Fprintf(w, "  %sNovel details: %s%s\n", ColorCyan, ref.Scores.NovelInfo, ColorReset)
 			}
 		}
 	}
 
 	if result.RefAggregate != nil {
-		fmt.Fprintf(w, "\n%sReference Scores (%d file%s)%s\n", ColorBold, len(result.RefResults), pluralS(len(result.RefResults)), ColorReset)
+		_, _ = fmt.Fprintf(w, "\n%sReference Scores (%d file%s)%s\n", ColorBold, len(result.RefResults), pluralS(len(result.RefResults)), ColorReset)
 		printDimScore(w, "Clarity", result.RefAggregate.Clarity)
 		printDimScore(w, "Instructional Value", result.RefAggregate.InstructionalValue)
 		printDimScore(w, "Token Efficiency", result.RefAggregate.TokenEfficiency)
 		printDimScore(w, "Novelty", result.RefAggregate.Novelty)
 		printDimScore(w, "Skill Relevance", result.RefAggregate.SkillRelevance)
-		fmt.Fprintf(w, "  %s\n", strings.Repeat("─", 30))
-		fmt.Fprintf(w, "  %sOverall:              %.2f/5%s\n", ColorBold, result.RefAggregate.Overall, ColorReset)
+		_, _ = fmt.Fprintf(w, "  %s\n", strings.Repeat("─", 30))
+		_, _ = fmt.Fprintf(w, "  %sOverall:              %.2f/5%s\n", ColorBold, result.RefAggregate.Overall, ColorReset)
 	}
 
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w)
 }
 
 func printDimScore(w io.Writer, name string, score int) {
@@ -125,7 +125,7 @@ func printDimScore(w io.Writer, name string, score int) {
 		color = ColorYellow
 	}
 	padding := max(22-len(name), 1)
-	fmt.Fprintf(w, "  %s:%s%s%d/5%s\n", name, strings.Repeat(" ", padding), color, score, ColorReset)
+	_, _ = fmt.Fprintf(w, "  %s:%s%s%d/5%s\n", name, strings.Repeat(" ", padding), color, score, ColorReset)
 }
 
 func pluralS(n int) string {
