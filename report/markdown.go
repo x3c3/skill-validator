@@ -5,8 +5,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/types"
 	"github.com/dacharyc/skill-validator/util"
 )
@@ -173,7 +171,7 @@ func markdownLevelPrefix(level types.Level) string {
 	}
 }
 
-func printMarkdownContentReport(w io.Writer, title string, cr *content.Report) {
+func printMarkdownContentReport(w io.Writer, title string, cr *types.ContentReport) {
 	_, _ = fmt.Fprintf(w, "\n### %s\n\n", title)
 	_, _ = fmt.Fprintf(w, "| Metric | Value |\n")
 	_, _ = fmt.Fprintf(w, "| --- | ---: |\n")
@@ -187,7 +185,7 @@ func printMarkdownContentReport(w io.Writer, title string, cr *content.Report) {
 	_, _ = fmt.Fprintf(w, "| Code blocks | %d |\n", cr.CodeBlockCount)
 }
 
-func printMarkdownContaminationReport(w io.Writer, title string, rr *contamination.Report) {
+func printMarkdownContaminationReport(w io.Writer, title string, rr *types.ContaminationReport) {
 	_, _ = fmt.Fprintf(w, "\n### %s\n\n", title)
 	_, _ = fmt.Fprintf(w, "| Metric | Value |\n")
 	_, _ = fmt.Fprintf(w, "| --- | --- |\n")

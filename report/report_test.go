@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/types"
 )
 
@@ -436,7 +434,7 @@ func TestPrint_ContentAnalysis(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContentReport: &content.Report{
+		ContentReport: &types.ContentReport{
 			WordCount:              1250,
 			CodeBlockCount:         5,
 			CodeBlockRatio:         0.25,
@@ -508,7 +506,7 @@ func TestPrint_ContaminationAnalysis_Low(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			ContaminationLevel: "low",
 			ContaminationScore: 0.0,
 			ScopeBreadth:       1,
@@ -554,7 +552,7 @@ func TestPrint_ContaminationAnalysis_Medium(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			ContaminationLevel:   "medium",
 			ContaminationScore:   0.35,
 			ScopeBreadth:         3,
@@ -585,7 +583,7 @@ func TestPrint_ContaminationAnalysis_High(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			ContaminationLevel:   "high",
 			ContaminationScore:   0.7,
 			ScopeBreadth:         5,
@@ -635,7 +633,7 @@ func TestPrint_ContaminationAnalysis_NoPrimaryCategory(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			ContaminationLevel: "low",
 			ContaminationScore: 0.0,
 			ScopeBreadth:       0,

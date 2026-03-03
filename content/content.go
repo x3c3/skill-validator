@@ -4,21 +4,30 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/dacharyc/skill-validator/types"
 	"github.com/dacharyc/skill-validator/util"
 )
 
-// Strong directive language markers
-var strongMarkers = []string{
+// Strong directive language markers (pre-compiled for performance).
+var strongMarkerRes = compilePatterns([]string{
 	`\bmust\b`, `\balways\b`, `\bnever\b`, `\bshall\b`,
 	`\brequired\b`, `\bdo not\b`, `\bdon't\b`, `\bensure\b`,
 	`\bcritical\b`, `\bmandatory\b`,
-}
+})
 
-// Weak/advisory language markers
-var weakMarkers = []string{
+// Weak/advisory language markers (pre-compiled for performance).
+var weakMarkerRes = compilePatterns([]string{
 	`\bmay\b`, `\bconsider\b`, `\bcould\b`, `\bmight\b`,
 	`\boptional\b`, `\bpossibly\b`, `\bsuggested\b`,
 	`\bprefer\b`, `\btry to\b`, `\bif possible\b`,
+})
+
+func compilePatterns(patterns []string) []*regexp.Regexp {
+	res := make([]*regexp.Regexp, len(patterns))
+	for i, p := range patterns {
+		res[i] = regexp.MustCompile(p)
+	}
+	return res
 }
 
 // Common imperative verbs for instructions
@@ -47,27 +56,10 @@ var (
 	listItemPattern  = regexp.MustCompile(`(?m)^[\s]*[-*+]\s+|^\s*\d+\.\s+`)
 )
 
-// Report holds content analysis metrics for a skill.
-type Report struct {
-	WordCount              int      `json:"word_count"`
-	CodeBlockCount         int      `json:"code_block_count"`
-	CodeBlockRatio         float64  `json:"code_block_ratio"`
-	CodeLanguages          []string `json:"code_languages"`
-	SentenceCount          int      `json:"sentence_count"`
-	ImperativeCount        int      `json:"imperative_count"`
-	ImperativeRatio        float64  `json:"imperative_ratio"`
-	InformationDensity     float64  `json:"information_density"`
-	StrongMarkers          int      `json:"strong_markers"`
-	WeakMarkers            int      `json:"weak_markers"`
-	InstructionSpecificity float64  `json:"instruction_specificity"`
-	SectionCount           int      `json:"section_count"`
-	ListItemCount          int      `json:"list_item_count"`
-}
-
 // Analyze computes content metrics for SKILL.md content.
-func Analyze(content string) *Report {
+func Analyze(content string) *types.ContentReport {
 	if strings.TrimSpace(content) == "" {
-		return &Report{}
+		return &types.ContentReport{}
 	}
 
 	words := strings.Fields(content)
@@ -110,8 +102,8 @@ func Analyze(content string) *Report {
 	}
 
 	// Language marker analysis
-	strongCount := countMarkerMatches(content, strongMarkers)
-	weakCount := countMarkerMatches(content, weakMarkers)
+	strongCount := countMarkerMatches(content, strongMarkerRes)
+	weakCount := countMarkerMatches(content, weakMarkerRes)
 	totalMarkers := strongCount + weakCount
 	instructionSpecificity := 0.0
 	if totalMarkers > 0 {
@@ -124,7 +116,7 @@ func Analyze(content string) *Report {
 	// List item count
 	listItemCount := len(listItemPattern.FindAllString(content, -1))
 
-	return &Report{
+	return &types.ContentReport{
 		WordCount:              wordCount,
 		CodeBlockCount:         codeBlockCount,
 		CodeBlockRatio:         util.RoundTo(codeBlockRatio, 4),
@@ -175,11 +167,10 @@ func countImperativeSentences(sentences []string) int {
 	return count
 }
 
-func countMarkerMatches(text string, patterns []string) int {
+func countMarkerMatches(text string, patterns []*regexp.Regexp) int {
 	total := 0
 	textLower := strings.ToLower(text)
-	for _, pattern := range patterns {
-		re := regexp.MustCompile(pattern)
+	for _, re := range patterns {
 		total += len(re.FindAllString(textLower, -1))
 	}
 	return total

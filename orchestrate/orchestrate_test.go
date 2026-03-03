@@ -34,7 +34,7 @@ func TestRunAllChecks_AllEnabled(t *testing.T) {
 		Enabled:    AllGroups(),
 		StructOpts: structure.Options{},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.Errors != 0 {
 		t.Errorf("expected 0 errors, got %d", r.Errors)
@@ -97,7 +97,7 @@ func TestRunAllChecks_OnlyStructure(t *testing.T) {
 		},
 		StructOpts: structure.Options{},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	hasMarkdown := false
 	for _, res := range r.Results {
@@ -142,7 +142,7 @@ func TestRunAllChecks_OnlyLinks(t *testing.T) {
 			GroupContamination: false,
 		},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	for _, res := range r.Results {
 		if res.Category == "Structure" || res.Category == "Frontmatter" || res.Category == "Tokens" {
@@ -168,7 +168,7 @@ func TestRunAllChecks_SkipContamination(t *testing.T) {
 			GroupContamination: false,
 		},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.ContentReport == nil {
 		t.Error("expected ContentReport when content is enabled")
@@ -206,7 +206,7 @@ func TestRunAllChecks_OnlyContentContamination(t *testing.T) {
 			GroupContamination: true,
 		},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.ContentReport == nil {
 		t.Error("expected ContentReport")
@@ -234,7 +234,7 @@ func TestRunAllChecks_BrokenFrontmatter_AllChecks(t *testing.T) {
 	dir := fixtureDir(t, "broken-frontmatter")
 
 	opts := Options{Enabled: AllGroups()}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.Errors == 0 {
 		t.Error("expected errors for broken frontmatter")
@@ -289,7 +289,7 @@ func TestRunAllChecks_BrokenFrontmatter_OnlyContent(t *testing.T) {
 			GroupContamination: false,
 		},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.ContentReport == nil {
 		t.Fatal("expected ContentReport for content-only check")
@@ -313,7 +313,7 @@ func TestRunAllChecks_BrokenFrontmatter_OnlyContamination(t *testing.T) {
 			GroupContamination: true,
 		},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.ContaminationReport == nil {
 		t.Fatal("expected ContaminationReport for contamination-only check")
@@ -335,7 +335,7 @@ func TestRunAllChecks_OnlyContent_ReferencesHaveContentOnly(t *testing.T) {
 			GroupContamination: false,
 		},
 	}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	if r.ReferencesContentReport == nil {
 		t.Error("expected ReferencesContentReport when content is enabled")
@@ -361,7 +361,7 @@ func TestRunAllChecks_MultiSkill(t *testing.T) {
 
 	mr := &types.MultiReport{}
 	for _, d := range dirs {
-		r := RunAllChecks(d, opts)
+		r := RunAllChecks(t.Context(), d, opts)
 		mr.Skills = append(mr.Skills, r)
 		mr.Errors += r.Errors
 		mr.Warnings += r.Warnings
@@ -557,7 +557,7 @@ func TestRunContentAnalysis_NoReferencesContamination(t *testing.T) {
 
 func TestRunLinkChecks_ValidSkill(t *testing.T) {
 	dir := fixtureDir(t, "valid-skill")
-	r := RunLinkChecks(dir)
+	r := RunLinkChecks(t.Context(), dir)
 	if r.Errors != 0 {
 		t.Errorf("expected 0 errors, got %d", r.Errors)
 		for _, res := range r.Results {
@@ -579,7 +579,7 @@ func TestRunLinkChecks_ValidSkill(t *testing.T) {
 
 func TestRunLinkChecks_InvalidSkill(t *testing.T) {
 	dir := fixtureDir(t, "invalid-skill")
-	r := RunLinkChecks(dir)
+	r := RunLinkChecks(t.Context(), dir)
 	if r.Errors == 0 {
 		t.Error("expected errors for invalid skill with broken links")
 	}
@@ -587,7 +587,7 @@ func TestRunLinkChecks_InvalidSkill(t *testing.T) {
 
 func TestRunLinkChecks_BrokenDir(t *testing.T) {
 	dir := t.TempDir()
-	r := RunLinkChecks(dir)
+	r := RunLinkChecks(t.Context(), dir)
 	if r.Errors != 1 {
 		t.Errorf("expected 1 error, got %d", r.Errors)
 	}
@@ -599,7 +599,7 @@ func TestRunAllChecks_JSONOutput(t *testing.T) {
 	dir := fixtureDir(t, "rich-skill")
 
 	opts := Options{Enabled: AllGroups()}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
@@ -650,7 +650,7 @@ func TestRunAllChecks_JSONOutput(t *testing.T) {
 func TestOutputJSON_FullCheck_ValidSkill(t *testing.T) {
 	dir := fixtureDir(t, "valid-skill")
 	opts := Options{Enabled: AllGroups()}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	var buf bytes.Buffer
 	if err := report.PrintJSON(&buf, r, false); err != nil {
@@ -688,7 +688,7 @@ func TestOutputJSON_FullCheck_ValidSkill(t *testing.T) {
 func TestOutputJSON_FullCheck_RichSkill(t *testing.T) {
 	dir := fixtureDir(t, "rich-skill")
 	opts := Options{Enabled: AllGroups()}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	var buf bytes.Buffer
 	if err := report.PrintJSON(&buf, r, false); err != nil {
@@ -739,7 +739,7 @@ func TestOutputJSON_MultiSkill(t *testing.T) {
 
 	mr := &types.MultiReport{}
 	for _, d := range dirs {
-		r := RunAllChecks(d, opts)
+		r := RunAllChecks(t.Context(), d, opts)
 		mr.Skills = append(mr.Skills, r)
 		mr.Errors += r.Errors
 		mr.Warnings += r.Warnings
@@ -774,7 +774,7 @@ func TestOutputJSON_MultiSkill(t *testing.T) {
 func TestOutputJSON_PerFile_ValidSkill(t *testing.T) {
 	dir := fixtureDir(t, "valid-skill")
 	opts := Options{Enabled: AllGroups()}
-	r := RunAllChecks(dir, opts)
+	r := RunAllChecks(t.Context(), dir, opts)
 
 	var buf bytes.Buffer
 	if err := report.PrintJSON(&buf, r, true); err != nil {

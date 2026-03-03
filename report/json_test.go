@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/types"
 )
 
@@ -397,7 +395,7 @@ func TestPrintJSON_ContaminationAnalysis(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			MultiInterfaceTools:  []string{"mongodb"},
 			CodeLanguages:        []string{"python", "javascript", "bash"},
 			LanguageCategories:   []string{"python", "javascript", "shell"},
@@ -478,7 +476,7 @@ func TestPrintJSON_ContentAnalysis(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContentReport: &content.Report{
+		ContentReport: &types.ContentReport{
 			WordCount:              500,
 			CodeBlockCount:         3,
 			CodeBlockRatio:         0.2,
@@ -556,7 +554,7 @@ func TestPrintMultiJSON_WithContamination(t *testing.T) {
 			{
 				SkillDir: "/tmp/skill-a",
 				Results:  []types.Result{{Level: types.Pass, Category: "Structure", Message: "ok"}},
-				ContaminationReport: &contamination.Report{
+				ContaminationReport: &types.ContaminationReport{
 					ContaminationLevel: "low",
 					ContaminationScore: 0.0,
 					ScopeBreadth:       1,
@@ -565,7 +563,7 @@ func TestPrintMultiJSON_WithContamination(t *testing.T) {
 			{
 				SkillDir: "/tmp/skill-b",
 				Results:  []types.Result{{Level: types.Pass, Category: "Structure", Message: "ok"}},
-				ContaminationReport: &contamination.Report{
+				ContaminationReport: &types.ContaminationReport{
 					ContaminationLevel: "high",
 					ContaminationScore: 0.6,
 					ScopeBreadth:       5,

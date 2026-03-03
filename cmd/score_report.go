@@ -47,14 +47,14 @@ func runScoreReport(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(results) == 0 {
-		fmt.Println("No cached scores found. Run 'score evaluate' first.")
+		_, _ = fmt.Fprintln(os.Stdout, "No cached scores found. Run 'score evaluate' first.")
 		return nil
 	}
 
 	if reportModel != "" {
 		results = judge.FilterByModel(results, reportModel)
 		if len(results) == 0 {
-			fmt.Printf("No cached scores found for model %q.\n", reportModel)
+			_, _ = fmt.Fprintf(os.Stdout, "No cached scores found for model %q.\n", reportModel)
 			return nil
 		}
 	}

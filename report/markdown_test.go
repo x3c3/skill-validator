@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/types"
 )
 
@@ -140,7 +138,7 @@ func TestPrintMarkdown_ContentAnalysis(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContentReport: &content.Report{
+		ContentReport: &types.ContentReport{
 			WordCount:              1250,
 			CodeBlockCount:         5,
 			CodeBlockRatio:         0.25,
@@ -179,7 +177,7 @@ func TestPrintMarkdown_ContaminationAnalysis(t *testing.T) {
 	r := &types.Report{
 		SkillDir: "/tmp/test",
 		Results:  []types.Result{},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			ContaminationLevel:   "high",
 			ContaminationScore:   0.7,
 			ScopeBreadth:         5,
@@ -330,7 +328,7 @@ func TestPrintMarkdown_NoAnsiCodes(t *testing.T) {
 		TokenCounts: []types.TokenCount{
 			{File: "SKILL.md body", Tokens: 1250},
 		},
-		ContentReport: &content.Report{
+		ContentReport: &types.ContentReport{
 			WordCount:              500,
 			CodeBlockRatio:         0.2,
 			ImperativeRatio:        0.5,
@@ -340,7 +338,7 @@ func TestPrintMarkdown_NoAnsiCodes(t *testing.T) {
 			ListItemCount:          8,
 			CodeBlockCount:         2,
 		},
-		ContaminationReport: &contamination.Report{
+		ContaminationReport: &types.ContaminationReport{
 			ContaminationLevel: "medium",
 			ContaminationScore: 0.4,
 			ScopeBreadth:       3,
@@ -366,7 +364,7 @@ func TestPrintMarkdown_PerFileReports(t *testing.T) {
 		ReferenceReports: []types.ReferenceFileReport{
 			{
 				File: "guide.md",
-				ContentReport: &content.Report{
+				ContentReport: &types.ContentReport{
 					WordCount:              200,
 					CodeBlockRatio:         0.1,
 					ImperativeRatio:        0.3,
@@ -376,7 +374,7 @@ func TestPrintMarkdown_PerFileReports(t *testing.T) {
 					ListItemCount:          4,
 					CodeBlockCount:         1,
 				},
-				ContaminationReport: &contamination.Report{
+				ContaminationReport: &types.ContaminationReport{
 					ContaminationLevel: "low",
 					ContaminationScore: 0.0,
 					ScopeBreadth:       1,

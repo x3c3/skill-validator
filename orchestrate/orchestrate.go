@@ -7,6 +7,8 @@
 package orchestrate
 
 import (
+	"context"
+
 	"github.com/dacharyc/skill-validator/contamination"
 	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/links"
@@ -44,8 +46,9 @@ type Options struct {
 }
 
 // RunAllChecks runs all enabled check groups against a single skill directory
-// and returns a unified report.
-func RunAllChecks(dir string, opts Options) *types.Report {
+// and returns a unified report. The context is used for cancellation of
+// network operations (e.g. link checking).
+func RunAllChecks(ctx context.Context, dir string, opts Options) *types.Report {
 	rpt := &types.Report{SkillDir: dir}
 
 	// Structure validation (spec compliance, tokens, code fences)
@@ -78,7 +81,7 @@ func RunAllChecks(dir string, opts Options) *types.Report {
 
 		// Link checks require a fully parsed skill
 		if skillLoaded && opts.Enabled[GroupLinks] {
-			rpt.Results = append(rpt.Results, links.CheckLinks(dir, body)...)
+			rpt.Results = append(rpt.Results, links.CheckLinks(ctx, dir, body)...)
 		}
 
 		// Content analysis works on raw content (no frontmatter parsing needed)
@@ -120,18 +123,7 @@ func RunAllChecks(dir string, opts Options) *types.Report {
 		}
 	}
 
-	// Tally errors and warnings
-	rpt.Errors = 0
-	rpt.Warnings = 0
-	for _, r := range rpt.Results {
-		switch r.Level {
-		case types.Error:
-			rpt.Errors++
-		case types.Warning:
-			rpt.Warnings++
-		}
-	}
-
+	rpt.Tally()
 	return rpt
 }
 
@@ -183,7 +175,7 @@ func RunContaminationAnalysis(dir string) *types.Report {
 }
 
 // RunLinkChecks validates external HTTP/HTTPS links in a single skill directory.
-func RunLinkChecks(dir string) *types.Report {
+func RunLinkChecks(ctx context.Context, dir string) *types.Report {
 	rpt := &types.Report{SkillDir: dir}
 
 	s, err := skill.Load(dir)
@@ -194,17 +186,7 @@ func RunLinkChecks(dir string) *types.Report {
 		return rpt
 	}
 
-	rpt.Results = append(rpt.Results, links.CheckLinks(dir, s.Body)...)
-
-	// Tally
-	for _, r := range rpt.Results {
-		switch r.Level {
-		case types.Error:
-			rpt.Errors++
-		case types.Warning:
-			rpt.Warnings++
-		}
-	}
+	rpt.Results = append(rpt.Results, links.CheckLinks(ctx, dir, s.Body)...)
 
 	// If no results at all, add a pass result
 	if len(rpt.Results) == 0 {
@@ -212,5 +194,6 @@ func RunLinkChecks(dir string) *types.Report {
 			types.ResultContext{Category: "Links"}.Pass("all link checks passed"))
 	}
 
+	rpt.Tally()
 	return rpt
 }

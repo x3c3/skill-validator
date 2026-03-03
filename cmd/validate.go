@@ -46,7 +46,7 @@ func outputReportWithExitOpts(r *types.Report, perFile bool, opts exitOpts) erro
 		report.PrintAnnotations(os.Stdout, r, wd)
 	}
 	if code := opts.resolve(r.Errors, r.Warnings); code != 0 {
-		os.Exit(code)
+		return exitCodeError{code: code}
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func outputMultiReportWithExitOpts(mr *types.MultiReport, perFile bool, opts exi
 		report.PrintMultiAnnotations(os.Stdout, mr, wd)
 	}
 	if code := opts.resolve(mr.Errors, mr.Warnings); code != 0 {
-		os.Exit(code)
+		return exitCodeError{code: code}
 	}
 	return nil
 }

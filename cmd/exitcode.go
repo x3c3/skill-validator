@@ -1,5 +1,7 @@
 package cmd
 
+import "fmt"
+
 // Exit codes used by the CLI.
 const (
 	ExitClean   = 0 // no errors, no warnings
@@ -7,6 +9,16 @@ const (
 	ExitWarning = 2 // warnings present, no errors
 	ExitCobra   = 3 // CLI/usage error (bad flags, missing args)
 )
+
+// exitCodeError is a sentinel error that carries a non-zero exit code.
+// It is returned by output helpers and handled by Execute().
+type exitCodeError struct {
+	code int
+}
+
+func (e exitCodeError) Error() string {
+	return fmt.Sprintf("exit code %d", e.code)
+}
 
 // exitOpts controls how validation results map to exit codes.
 type exitOpts struct {

@@ -62,7 +62,7 @@ func TestComputeMean(t *testing.T) {
 		vals []int
 		want float64
 	}{
-		{"all filled", []int{4, 5, 3, 4, 4, 2}, 3.66},
+		{"all filled", []int{4, 5, 3, 4, 4, 2}, 3.67},
 		{"with zeros", []int{4, 0, 3, 0, 4, 2}, 3.25},
 		{"all zeros", []int{0, 0, 0}, 0},
 		{"single value", []int{5}, 5.0},

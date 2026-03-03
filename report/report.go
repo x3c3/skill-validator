@@ -5,8 +5,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/types"
 	"github.com/dacharyc/skill-validator/util"
 )
@@ -201,7 +199,7 @@ func PrintMulti(w io.Writer, mr *types.MultiReport, perFile bool) {
 	_, _ = fmt.Fprintln(w)
 }
 
-func printContentReport(w io.Writer, title string, cr *content.Report) {
+func printContentReport(w io.Writer, title string, cr *types.ContentReport) {
 	_, _ = fmt.Fprintf(w, "\n%s%s%s\n", colorBold, title, colorReset)
 	_, _ = fmt.Fprintf(w, "  Word count:               %s\n", util.FormatNumber(cr.WordCount))
 	_, _ = fmt.Fprintf(w, "  Code block ratio:         %.2f\n", cr.CodeBlockRatio)
@@ -212,7 +210,7 @@ func printContentReport(w io.Writer, title string, cr *content.Report) {
 		cr.SectionCount, cr.ListItemCount, cr.CodeBlockCount)
 }
 
-func printContaminationReport(w io.Writer, title string, rr *contamination.Report) {
+func printContaminationReport(w io.Writer, title string, rr *types.ContaminationReport) {
 	_, _ = fmt.Fprintf(w, "\n%s%s%s\n", colorBold, title, colorReset)
 	levelColor := colorGreen
 	switch rr.ContaminationLevel {

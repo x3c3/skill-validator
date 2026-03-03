@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dacharyc/skill-validator/types"
 	"github.com/dacharyc/skill-validator/util"
 )
 
@@ -100,25 +101,10 @@ func mismatchWeight(cat1, cat2 string) float64 {
 	return 1.0
 }
 
-// Report holds contamination metrics for a skill.
-type Report struct {
-	MultiInterfaceTools  []string           `json:"multi_interface_tools"`
-	CodeLanguages        []string           `json:"code_languages"`
-	LanguageCategories   []string           `json:"language_categories"`
-	PrimaryCategory      string             `json:"primary_category"`
-	MismatchedCategories []string           `json:"mismatched_categories"`
-	MismatchWeights      map[string]float64 `json:"mismatch_weights"`
-	LanguageMismatch     bool               `json:"language_mismatch"`
-	TechReferences       []string           `json:"tech_references"`
-	ScopeBreadth         int                `json:"scope_breadth"`
-	ContaminationScore   float64            `json:"contamination_score"`
-	ContaminationLevel   string             `json:"contamination_level"`
-}
-
 // Analyze computes contamination metrics for a skill.
 // name is the skill name, content is the SKILL.md content,
 // codeLanguages are the language identifiers extracted from code blocks.
-func Analyze(name, content string, codeLanguages []string) *Report {
+func Analyze(name, content string, codeLanguages []string) *types.ContaminationReport {
 	if codeLanguages == nil {
 		codeLanguages = []string{}
 	}
@@ -193,7 +179,7 @@ func Analyze(name, content string, codeLanguages []string) *Report {
 		level = "medium"
 	}
 
-	return &Report{
+	return &types.ContaminationReport{
 		MultiInterfaceTools:  multiTools,
 		CodeLanguages:        codeLanguages,
 		LanguageCategories:   util.SortedKeys(langCategories),

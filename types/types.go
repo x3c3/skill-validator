@@ -3,11 +3,6 @@
 // skill modes, and aggregated reports.
 package types
 
-import (
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
-)
-
 // Level represents the severity of a validation result.
 type Level int
 
@@ -49,11 +44,43 @@ type TokenCount struct {
 	Tokens int
 }
 
+// ContentReport holds content quality metrics computed by the content analyzer.
+type ContentReport struct {
+	WordCount              int      `json:"word_count"`
+	CodeBlockCount         int      `json:"code_block_count"`
+	CodeBlockRatio         float64  `json:"code_block_ratio"`
+	CodeLanguages          []string `json:"code_languages"`
+	SentenceCount          int      `json:"sentence_count"`
+	ImperativeCount        int      `json:"imperative_count"`
+	ImperativeRatio        float64  `json:"imperative_ratio"`
+	InformationDensity     float64  `json:"information_density"`
+	StrongMarkers          int      `json:"strong_markers"`
+	WeakMarkers            int      `json:"weak_markers"`
+	InstructionSpecificity float64  `json:"instruction_specificity"`
+	SectionCount           int      `json:"section_count"`
+	ListItemCount          int      `json:"list_item_count"`
+}
+
+// ContaminationReport holds cross-language contamination metrics.
+type ContaminationReport struct {
+	MultiInterfaceTools  []string           `json:"multi_interface_tools"`
+	CodeLanguages        []string           `json:"code_languages"`
+	LanguageCategories   []string           `json:"language_categories"`
+	PrimaryCategory      string             `json:"primary_category"`
+	MismatchedCategories []string           `json:"mismatched_categories"`
+	MismatchWeights      map[string]float64 `json:"mismatch_weights"`
+	LanguageMismatch     bool               `json:"language_mismatch"`
+	TechReferences       []string           `json:"tech_references"`
+	ScopeBreadth         int                `json:"scope_breadth"`
+	ContaminationScore   float64            `json:"contamination_score"`
+	ContaminationLevel   string             `json:"contamination_level"`
+}
+
 // ReferenceFileReport holds per-file content and contamination analysis for a single reference file.
 type ReferenceFileReport struct {
 	File                string
-	ContentReport       *content.Report
-	ContaminationReport *contamination.Report
+	ContentReport       *ContentReport
+	ContaminationReport *ContaminationReport
 }
 
 // Report holds all validation results and token counts.
@@ -62,10 +89,10 @@ type Report struct {
 	Results                       []Result
 	TokenCounts                   []TokenCount
 	OtherTokenCounts              []TokenCount
-	ContentReport                 *content.Report
-	ReferencesContentReport       *content.Report
-	ContaminationReport           *contamination.Report
-	ReferencesContaminationReport *contamination.Report
+	ContentReport                 *ContentReport
+	ReferencesContentReport       *ContentReport
+	ContaminationReport           *ContaminationReport
+	ReferencesContaminationReport *ContaminationReport
 	ReferenceReports              []ReferenceFileReport
 	Errors                        int
 	Warnings                      int

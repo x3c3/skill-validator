@@ -4,30 +4,28 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/dacharyc/skill-validator/contamination"
-	"github.com/dacharyc/skill-validator/content"
 	"github.com/dacharyc/skill-validator/types"
 )
 
 type jsonReport struct {
-	SkillDir                        string                    `json:"skill_dir"`
-	Passed                          bool                      `json:"passed"`
-	Errors                          int                       `json:"errors"`
-	Warnings                        int                       `json:"warnings"`
-	Results                         []jsonResult              `json:"results"`
-	TokenCounts                     *jsonTokenCounts          `json:"token_counts,omitempty"`
-	OtherTokenCounts                *jsonTokenCounts          `json:"other_token_counts,omitempty"`
-	ContentAnalysis                 *content.Report           `json:"content_analysis,omitempty"`
-	ReferencesContentAnalysis       *content.Report           `json:"references_content_analysis,omitempty"`
-	ContaminationAnalysis           *contamination.Report     `json:"contamination_analysis,omitempty"`
-	ReferencesContaminationAnalysis *contamination.Report     `json:"references_contamination_analysis,omitempty"`
-	ReferenceReports                []jsonReferenceFileReport `json:"reference_reports,omitempty"`
+	SkillDir                        string                     `json:"skill_dir"`
+	Passed                          bool                       `json:"passed"`
+	Errors                          int                        `json:"errors"`
+	Warnings                        int                        `json:"warnings"`
+	Results                         []jsonResult               `json:"results"`
+	TokenCounts                     *jsonTokenCounts           `json:"token_counts,omitempty"`
+	OtherTokenCounts                *jsonTokenCounts           `json:"other_token_counts,omitempty"`
+	ContentAnalysis                 *types.ContentReport       `json:"content_analysis,omitempty"`
+	ReferencesContentAnalysis       *types.ContentReport       `json:"references_content_analysis,omitempty"`
+	ContaminationAnalysis           *types.ContaminationReport `json:"contamination_analysis,omitempty"`
+	ReferencesContaminationAnalysis *types.ContaminationReport `json:"references_contamination_analysis,omitempty"`
+	ReferenceReports                []jsonReferenceFileReport  `json:"reference_reports,omitempty"`
 }
 
 type jsonReferenceFileReport struct {
-	File                  string                `json:"file"`
-	ContentAnalysis       *content.Report       `json:"content_analysis,omitempty"`
-	ContaminationAnalysis *contamination.Report `json:"contamination_analysis,omitempty"`
+	File                  string                     `json:"file"`
+	ContentAnalysis       *types.ContentReport       `json:"content_analysis,omitempty"`
+	ContaminationAnalysis *types.ContaminationReport `json:"contamination_analysis,omitempty"`
 }
 
 type jsonResult struct {

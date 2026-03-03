@@ -22,6 +22,11 @@ var rootCmd = &cobra.Command{
 	Use:   "skill-validator",
 	Short: "Validate and analyze agent skills",
 	Long:  "A CLI for validating skill directory structure, analyzing content quality, and detecting cross-language contamination.",
+	// Once a command starts running (args parsed successfully), don't print
+	// usage on error — the error is operational, not a CLI mistake.
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		cmd.SilenceUsage = true
+	},
 }
 
 func init() {
@@ -32,7 +37,16 @@ func init() {
 
 // Execute runs the root command.
 func Execute() {
+	// We handle error printing ourselves so that exitCodeError (validation
+	// failures) doesn't produce cobra's default "Error: exit code N" noise.
+	rootCmd.SilenceErrors = true
 	if err := rootCmd.Execute(); err != nil {
+		if ec, ok := err.(exitCodeError); ok {
+			// Validation failure — report was already printed.
+			os.Exit(ec.code)
+		}
+		// CLI/usage error — print and exit.
+		fmt.Fprintln(os.Stderr, "Error:", err)
 		os.Exit(ExitCobra)
 	}
 }

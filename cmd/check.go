@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -64,15 +65,16 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		StructOpts: structure.Options{SkipOrphans: checkSkipOrphans},
 	}
 	eopts := exitOpts{strict: strictCheck}
+	ctx := context.Background()
 
 	switch mode {
 	case types.SingleSkill:
-		r := orchestrate.RunAllChecks(dirs[0], opts)
+		r := orchestrate.RunAllChecks(ctx, dirs[0], opts)
 		return outputReportWithExitOpts(r, perFileCheck, eopts)
 	case types.MultiSkill:
 		mr := &types.MultiReport{}
 		for _, dir := range dirs {
-			r := orchestrate.RunAllChecks(dir, opts)
+			r := orchestrate.RunAllChecks(ctx, dir, opts)
 			mr.Skills = append(mr.Skills, r)
 			mr.Errors += r.Errors
 			mr.Warnings += r.Warnings

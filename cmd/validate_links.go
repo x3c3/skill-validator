@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 
 	"github.com/dacharyc/skill-validator/orchestrate"
@@ -25,14 +27,16 @@ func runValidateLinks(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	ctx := context.Background()
+
 	switch mode {
 	case types.SingleSkill:
-		r := orchestrate.RunLinkChecks(dirs[0])
+		r := orchestrate.RunLinkChecks(ctx, dirs[0])
 		return outputReport(r)
 	case types.MultiSkill:
 		mr := &types.MultiReport{}
 		for _, dir := range dirs {
-			r := orchestrate.RunLinkChecks(dir)
+			r := orchestrate.RunLinkChecks(ctx, dir)
 			mr.Skills = append(mr.Skills, r)
 			mr.Errors += r.Errors
 			mr.Warnings += r.Warnings

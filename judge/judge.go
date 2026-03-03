@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 
@@ -82,10 +83,10 @@ var (
 )
 
 // SkillDimensions returns the dimension names for SKILL.md scoring.
-func SkillDimensions() []string { return skillDims }
+func SkillDimensions() []string { return append([]string{}, skillDims...) }
 
 // RefDimensions returns the dimension names for reference file scoring.
-func RefDimensions() []string { return refDims }
+func RefDimensions() []string { return append([]string{}, refDims...) }
 
 // ---------------------------------------------------------------------------
 // Judge prompts — ported from analysis/llm_judge.py
@@ -458,7 +459,7 @@ func computeMean(vals []int) float64 {
 	if count == 0 {
 		return 0
 	}
-	return float64(sum*100/count) / 100
+	return math.Round(float64(sum)/float64(count)*100) / 100
 }
 
 func mergeSkillScores(base, retry *SkillScores) *SkillScores {

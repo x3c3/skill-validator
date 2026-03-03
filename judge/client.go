@@ -8,7 +8,12 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
+
+// defaultHTTPClient is used for all LLM API calls. It sets a timeout so
+// that a hanging upstream doesn't block the caller indefinitely.
+var defaultHTTPClient = &http.Client{Timeout: 30 * time.Second}
 
 // LLMClient is the interface for making LLM API calls.
 type LLMClient interface {
@@ -22,11 +27,12 @@ type LLMClient interface {
 
 // ClientOptions holds configuration for creating an LLM client.
 type ClientOptions struct {
-	Provider       string // "anthropic" or "openai"
-	APIKey         string // Required
-	BaseURL        string // Optional; defaults per provider
-	Model          string // Optional; defaults per provider
-	MaxTokensStyle string // "auto", "max_tokens", or "max_completion_tokens"
+	Provider          string // "anthropic" or "openai"
+	APIKey            string // Required
+	BaseURL           string // Optional; defaults per provider
+	Model             string // Optional; defaults per provider
+	MaxTokensStyle    string // "auto", "max_tokens", or "max_completion_tokens"
+	MaxResponseTokens int    // Maximum tokens in the LLM response; 0 defaults to 500
 }
 
 // NewClient creates an LLMClient for the given options.
@@ -35,6 +41,11 @@ type ClientOptions struct {
 func NewClient(opts ClientOptions) (LLMClient, error) {
 	if opts.APIKey == "" {
 		return nil, fmt.Errorf("API key is required")
+	}
+
+	maxResp := opts.MaxResponseTokens
+	if maxResp <= 0 {
+		maxResp = 500
 	}
 
 	switch strings.ToLower(opts.Provider) {
@@ -47,7 +58,7 @@ func NewClient(opts ClientOptions) (LLMClient, error) {
 		if opts.BaseURL != "" {
 			baseURL = strings.TrimRight(opts.BaseURL, "/")
 		}
-		return &anthropicClient{apiKey: opts.APIKey, model: model, baseURL: baseURL}, nil
+		return &anthropicClient{apiKey: opts.APIKey, model: model, baseURL: baseURL, maxTokens: maxResp}, nil
 	case "openai":
 		model := opts.Model
 		if model == "" {
@@ -58,7 +69,7 @@ func NewClient(opts ClientOptions) (LLMClient, error) {
 			baseURL = "https://api.openai.com/v1"
 		}
 		baseURL = strings.TrimRight(baseURL, "/")
-		return &openaiClient{apiKey: opts.APIKey, baseURL: baseURL, model: model, maxTokensStyle: opts.MaxTokensStyle}, nil
+		return &openaiClient{apiKey: opts.APIKey, baseURL: baseURL, model: model, maxTokensStyle: opts.MaxTokensStyle, maxTokens: maxResp}, nil
 	default:
 		return nil, fmt.Errorf("unsupported provider %q (use \"anthropic\" or \"openai\")", opts.Provider)
 	}
@@ -67,9 +78,10 @@ func NewClient(opts ClientOptions) (LLMClient, error) {
 // --- Anthropic client ---
 
 type anthropicClient struct {
-	apiKey  string
-	model   string
-	baseURL string
+	apiKey    string
+	model     string
+	baseURL   string
+	maxTokens int
 }
 
 func (c *anthropicClient) Provider() string  { return "anthropic" }
@@ -99,7 +111,7 @@ type anthropicResponse struct {
 func (c *anthropicClient) Complete(ctx context.Context, systemPrompt, userContent string) (string, error) {
 	reqBody := anthropicRequest{
 		Model:     c.model,
-		MaxTokens: 500,
+		MaxTokens: c.maxTokens,
 		System:    systemPrompt,
 		Messages: []anthropicMessage{
 			{Role: "user", Content: userContent},
@@ -120,7 +132,7 @@ func (c *anthropicClient) Complete(ctx context.Context, systemPrompt, userConten
 	req.Header.Set("x-api-key", c.apiKey)
 	req.Header.Set("anthropic-version", "2023-06-01")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := defaultHTTPClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("API request failed: %w", err)
 	}
@@ -158,6 +170,7 @@ type openaiClient struct {
 	baseURL        string
 	model          string
 	maxTokensStyle string
+	maxTokens      int
 }
 
 func (c *openaiClient) Provider() string  { return "openai" }
@@ -214,14 +227,14 @@ func (c *openaiClient) Complete(ctx context.Context, systemPrompt, userContent s
 	}
 	switch c.maxTokensStyle {
 	case "max_completion_tokens":
-		reqBody.MaxCompletionTokens = 500
+		reqBody.MaxCompletionTokens = c.maxTokens
 	case "max_tokens":
-		reqBody.MaxTokens = 500
+		reqBody.MaxTokens = c.maxTokens
 	default: // "auto" or empty
 		if useMaxCompletionTokens(c.model) {
-			reqBody.MaxCompletionTokens = 500
+			reqBody.MaxCompletionTokens = c.maxTokens
 		} else {
-			reqBody.MaxTokens = 500
+			reqBody.MaxTokens = c.maxTokens
 		}
 	}
 
@@ -238,7 +251,7 @@ func (c *openaiClient) Complete(ctx context.Context, systemPrompt, userContent s
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := defaultHTTPClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("API request failed: %w", err)
 	}
