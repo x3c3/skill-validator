@@ -36,6 +36,7 @@ Spec compliance is table stakes. `skill-validator` goes further: it checks that 
   - [Content analysis](#content-analysis-analyze-content)
   - [Contamination analysis](#contamination-analysis-analyze-contamination)
   - [LLM scoring](#llm-scoring-score-evaluate)
+- [Stability](#stability)
 - [Development](#development)
 
 ## Install
@@ -721,6 +722,37 @@ Uses an LLM-as-judge approach ported from the [agent-skill-analysis](https://git
 - **Skill Relevance**: Does every section support the parent skill's purpose?
 
 **Novel detail follow-up**: When a skill or reference file scores 3 or higher on novelty, a separate follow-up call identifies which specific details are novel (proprietary APIs, internal conventions, unpublished workflows, etc.) in 1-2 sentences. This gives human reviewers a targeted signal for fact-checking without inflating novelty scores. The follow-up is non-fatal; if it fails, scores are returned normally. The result appears as "Novel details:" in text output and as `novel_info` in JSON/cached output.
+
+## Stability
+
+This project follows [semantic versioning](https://semver.org/) starting at v1.0.0.
+
+**Stable packages** (breaking changes only in major releases):
+
+- `orchestrate`
+- `evaluate`
+- `structure`
+- `content`
+- `contamination`
+- `links`
+- `skill`
+- `skillcheck`
+- `report`
+- `types`
+
+**Experimental packages:**
+
+- `judge` — This package is under active development as the LLM scoring approach evolves. Its API may change in minor releases without a major version bump. The package doc comment includes an `EXPERIMENTAL` notice.
+
+**What counts as a breaking change** (for stable packages):
+
+- Removing or renaming an exported symbol (function, type, constant, variable)
+- Changing a function or method signature (parameters, return types)
+- Incompatible behavior changes that would break existing callers
+
+**Deprecation process:**
+
+Deprecated symbols are annotated with `// Deprecated:` comments following [Go convention](https://go.dev/wiki/Deprecated). Deprecated symbols are kept for at least one minor release after their replacement ships, giving consumers time to migrate before removal.
 
 ## Development
 

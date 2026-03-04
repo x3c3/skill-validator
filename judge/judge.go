@@ -2,6 +2,11 @@
 // SKILL.md and reference file content to an LLM judge that rates them on
 // dimensions like clarity, actionability, token efficiency, and novelty.
 // Results are cached per provider/model/file to avoid redundant API calls.
+//
+// # Stability
+//
+// This package is EXPERIMENTAL. Its API may change in minor releases without
+// a major version bump. See the project README for the full stability policy.
 package judge
 
 import (

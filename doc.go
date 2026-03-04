@@ -28,6 +28,9 @@
 // the [github.com/dacharyc/skill-validator/judge.LLMClient] interface.
 // See the "Custom LLM providers" section in the README for details.
 //
+// Note: the judge package is EXPERIMENTAL. Its API may change in minor releases.
+// See the project README for the full stability policy.
+//
 // # Lower-Level Packages
 //
 // For fine-grained control, use the individual packages directly:
