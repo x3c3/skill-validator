@@ -12,14 +12,19 @@ import (
 
 // --- Color constants for terminal output ---
 
-// ANSI escape codes for terminal coloring.
 const (
-	ColorReset  = "\033[0m"
-	ColorBold   = "\033[1m"
-	ColorRed    = "\033[31m"
-	ColorGreen  = "\033[32m"
+	// ColorReset disables all ANSI text attributes.
+	ColorReset = "\033[0m"
+	// ColorBold enables bold text.
+	ColorBold = "\033[1m"
+	// ColorRed sets the text color to red.
+	ColorRed = "\033[31m"
+	// ColorGreen sets the text color to green.
+	ColorGreen = "\033[32m"
+	// ColorYellow sets the text color to yellow.
 	ColorYellow = "\033[33m"
-	ColorCyan   = "\033[36m"
+	// ColorCyan sets the text color to cyan.
+	ColorCyan = "\033[36m"
 )
 
 // --- Number formatting ---

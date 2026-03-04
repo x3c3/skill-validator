@@ -7,9 +7,13 @@ package types
 type Level int
 
 const (
+	// Pass indicates a check passed successfully.
 	Pass Level = iota
+	// Info indicates an informational finding that requires no action.
 	Info
+	// Warning indicates a non-blocking issue that should be reviewed.
 	Warning
+	// Error indicates a blocking issue that must be fixed.
 	Error
 )
 
@@ -116,8 +120,11 @@ func (r *Report) Tally() {
 type SkillMode int
 
 const (
+	// NoSkill means no SKILL.md was found in the directory.
 	NoSkill SkillMode = iota
+	// SingleSkill means the directory itself contains a SKILL.md.
 	SingleSkill
+	// MultiSkill means the directory contains subdirectories with SKILL.md files.
 	MultiSkill
 )
 

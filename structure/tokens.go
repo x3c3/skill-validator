@@ -10,19 +10,25 @@ import (
 )
 
 const (
-	// Per-file thresholds for reference files
+	// refFileSoftLimit is the per-file token warning threshold for reference files.
 	refFileSoftLimit = 10_000
+	// refFileHardLimit is the per-file token error threshold for reference files.
 	refFileHardLimit = 25_000
 
-	// Aggregate thresholds across all reference files
+	// refTotalSoftLimit is the aggregate token warning threshold across all reference files.
 	refTotalSoftLimit = 25_000
+	// refTotalHardLimit is the aggregate token error threshold across all reference files.
 	refTotalHardLimit = 50_000
 
-	// Aggregate thresholds for non-standard files
+	// otherTotalSoftLimit is the aggregate token warning threshold for non-standard files.
 	otherTotalSoftLimit = 25_000
+	// otherTotalHardLimit is the aggregate token error threshold for non-standard files.
 	otherTotalHardLimit = 100_000
 )
 
+// CheckTokens counts tokens for the SKILL.md body, reference files, asset files,
+// and non-standard files. It returns validation results, standard token counts,
+// and non-standard ("other") token counts.
 func CheckTokens(dir, body string) ([]types.Result, []types.TokenCount, []types.TokenCount) {
 	ctx := types.ResultContext{Category: "Tokens"}
 	var results []types.Result
@@ -137,7 +143,8 @@ func CheckTokens(dir, body string) ([]types.Result, []types.TokenCount, []types.
 	return results, counts, otherCounts
 }
 
-// binaryExtensions lists file extensions that should be skipped for token counting.
+// binaryExtensions lists file extensions that are skipped during token counting
+// because they are not text-based content.
 var binaryExtensions = map[string]bool{
 	".png": true, ".jpg": true, ".jpeg": true, ".gif": true, ".bmp": true,
 	".ico": true, ".svg": true, ".webp": true,
@@ -148,20 +155,23 @@ var binaryExtensions = map[string]bool{
 	".woff": true, ".woff2": true, ".ttf": true, ".eot": true, ".otf": true,
 }
 
-// standardRootFiles are files that are already counted in the main token table.
+// standardRootFiles lists root-level files already counted in the main token
+// table, so they are excluded from the "other files" count.
 var standardRootFiles = map[string]bool{
 	"skill.md": true,
 }
 
-// standardDirs are directories already handled by the standard structure.
+// standardDirs lists directories already handled by the standard skill
+// structure, so their contents are excluded from the "other files" count.
 var standardDirs = map[string]bool{
 	"references": true,
 	"scripts":    true,
 	"assets":     true,
 }
 
-// textAssetExtensions lists file extensions in assets/ that are text-based
-// and likely loaded into LLM context (templates, guides, configs).
+// textAssetExtensions lists file extensions in assets/ that are text-based and
+// likely loaded into LLM context (templates, guides, configs). These are
+// included in token counting.
 var textAssetExtensions = map[string]bool{
 	".md":       true,
 	".tex":      true,

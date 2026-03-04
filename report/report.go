@@ -1,3 +1,6 @@
+// Package report formats and prints validation and scoring results. It
+// supports colored terminal output, GitHub Actions annotations, JSON, and
+// Markdown output formats.
 package report
 
 import (
@@ -9,7 +12,7 @@ import (
 	"github.com/dacharyc/skill-validator/util"
 )
 
-// Shorthand aliases for color constants to keep format strings compact.
+// Shorthand aliases for ANSI color constants to keep format strings compact.
 const (
 	colorReset  = util.ColorReset
 	colorRed    = util.ColorRed
@@ -19,6 +22,8 @@ const (
 	colorBold   = util.ColorBold
 )
 
+// Print writes a human-readable validation report to w. When perFile is true,
+// per-file content and contamination analysis sections are included.
 func Print(w io.Writer, r *types.Report, perFile bool) {
 	_, _ = fmt.Fprintf(w, "\n%sValidating skill: %s%s\n", colorBold, r.SkillDir, colorReset)
 

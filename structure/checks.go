@@ -10,6 +10,7 @@ import (
 	"github.com/dacharyc/skill-validator/util"
 )
 
+// recognizedDirs lists the directory names defined by the skill spec.
 var recognizedDirs = map[string]bool{
 	"scripts":    true,
 	"references": true,
@@ -36,6 +37,9 @@ var knownExtraneousFiles = map[string]string{
 	".gitignore":            ".gitignore",
 }
 
+// CheckStructure validates the directory layout of a skill package. It checks
+// for the required SKILL.md file, flags unrecognized directories and extraneous
+// root files, and warns about deep nesting in recognized directories.
 func CheckStructure(dir string) []types.Result {
 	ctx := types.ResultContext{Category: "Structure"}
 	var results []types.Result

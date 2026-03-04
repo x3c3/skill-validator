@@ -1,3 +1,8 @@
+// Package contamination detects cross-language and cross-technology
+// contamination in skill content. It analyzes code block languages,
+// technology references, and multi-interface tool usage to compute a
+// contamination score indicating how likely a skill is to confuse an
+// agent by mixing unrelated languages or domains.
 package contamination
 
 import (
@@ -9,7 +14,9 @@ import (
 	"github.com/dacharyc/skill-validator/util"
 )
 
-// Tools/platforms known to have multiple language interfaces
+// multiInterfaceTools maps tool/platform names to the language identifiers
+// commonly used with them. When a skill mentions one of these tools, multiple
+// code languages are expected and should not be penalized as contamination.
 var multiInterfaceTools = map[string][]string{
 	"mongodb":       {"javascript", "python", "java", "csharp", "go", "ruby", "rust", "shell", "bash", "mongosh"},
 	"aws":           {"python", "javascript", "typescript", "java", "go", "cli", "bash", "shell", "cloudformation", "terraform"},
@@ -28,7 +35,8 @@ var multiInterfaceTools = map[string][]string{
 	"stripe":        {"python", "javascript", "ruby", "java", "go", "php", "curl"},
 }
 
-// Language/technology categories for detecting cross-contamination
+// languageCategories groups language identifiers into higher-level categories
+// for detecting cross-contamination between unrelated language families.
 var languageCategories = map[string]map[string]bool{
 	"shell":      {"bash": true, "shell": true, "sh": true, "zsh": true, "fish": true, "powershell": true, "cmd": true, "bat": true},
 	"javascript": {"javascript": true, "js": true, "typescript": true, "ts": true, "jsx": true, "tsx": true, "node": true},
@@ -43,7 +51,8 @@ var languageCategories = map[string]map[string]bool{
 	"mobile":     {"swift": true, "kotlin": true, "dart": true, "objective-c": true, "objc": true},
 }
 
-// Framework/runtime → category mapping for tech reference detection
+// techPatterns maps framework and runtime names to their language category,
+// used to detect technology references in prose that broaden scope.
 var techPatterns = map[string]string{
 	"node.js": "javascript",
 	"react":   "javascript",
@@ -59,9 +68,8 @@ var techPatterns = map[string]string{
 	"flutter": "mobile",
 }
 
-// Categories classified by type for syntactic similarity weighting.
-// Application languages have high confusion risk with each other (per PLC research).
-// Auxiliary languages (config, scripting, markup) have low confusion risk with application languages.
+// applicationCategories lists language categories classified as application languages.
+// These have high syntactic confusion risk with each other (per PLC research).
 var applicationCategories = map[string]bool{
 	"javascript": true,
 	"python":     true,
@@ -72,6 +80,8 @@ var applicationCategories = map[string]bool{
 	"mobile":     true,
 }
 
+// auxiliaryCategories lists language categories classified as auxiliary (config,
+// scripting, markup). These have low confusion risk with application languages.
 var auxiliaryCategories = map[string]bool{
 	"shell":  true,
 	"config": true,

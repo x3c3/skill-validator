@@ -1,3 +1,6 @@
+// Package skill handles parsing of SKILL.md files, including YAML frontmatter
+// extraction and body separation. It provides the core [Skill] type used by
+// validation and scoring packages.
 package skill
 
 import (
@@ -64,6 +67,8 @@ type Skill struct {
 	RawContent     string
 }
 
+// knownFrontmatterFields lists the frontmatter field names defined by the
+// skill spec. Fields not in this set trigger an "unrecognized field" warning.
 var knownFrontmatterFields = map[string]bool{
 	"name":          true,
 	"description":   true,

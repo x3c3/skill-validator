@@ -1,3 +1,6 @@
+// Package structure validates the directory layout, frontmatter, token counts,
+// markdown syntax, internal links, and orphan files of a skill package. It is
+// the main validation entry point used by the CLI.
 package structure
 
 import (

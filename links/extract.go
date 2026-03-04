@@ -1,3 +1,6 @@
+// Package links extracts and validates hyperlinks found in skill markdown
+// content. It handles both markdown-style links and bare URLs, checks HTTP
+// links concurrently, and reports broken or unreachable URLs.
 package links
 
 import (
@@ -6,12 +9,13 @@ import (
 )
 
 var (
-	// Match [text](url) markdown links
+	// mdLinkPattern matches [text](url) markdown links.
 	mdLinkPattern = regexp.MustCompile(`\[([^\]]*)\]\(([^)]+)\)`)
-	// Match bare URLs
+	// bareURLPattern matches bare URLs starting with http:// or https://.
 	bareURLPattern = regexp.MustCompile("(?:^|\\s)(https?://[^\\s<>\\)`]+)")
-	// Strip fenced code blocks and inline code spans before link extraction
-	codeBlockStrip  = regexp.MustCompile("(?s)(?:```|~~~)[\\w]*\\n.*?(?:```|~~~)")
+	// codeBlockStrip removes fenced code blocks before link extraction.
+	codeBlockStrip = regexp.MustCompile("(?s)(?:```|~~~)[\\w]*\\n.*?(?:```|~~~)")
+	// inlineCodeStrip removes inline code spans before link extraction.
 	inlineCodeStrip = regexp.MustCompile("`[^`]+`")
 )
 

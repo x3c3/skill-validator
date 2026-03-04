@@ -23,9 +23,13 @@ import (
 type CheckGroup string
 
 const (
-	GroupStructure     CheckGroup = "structure"
-	GroupLinks         CheckGroup = "links"
-	GroupContent       CheckGroup = "content"
+	// GroupStructure enables directory layout, frontmatter, and token checks.
+	GroupStructure CheckGroup = "structure"
+	// GroupLinks enables external HTTP/HTTPS link validation.
+	GroupLinks CheckGroup = "links"
+	// GroupContent enables content quality analysis.
+	GroupContent CheckGroup = "content"
+	// GroupContamination enables cross-language contamination analysis.
 	GroupContamination CheckGroup = "contamination"
 )
 

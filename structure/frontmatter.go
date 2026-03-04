@@ -11,6 +11,9 @@ import (
 
 var namePattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
+// CheckFrontmatter validates the YAML frontmatter of a parsed skill. It checks
+// required fields (name, description), enforces format and length constraints,
+// validates optional fields, and warns about unrecognized or keyword-stuffed fields.
 func CheckFrontmatter(s *skill.Skill) []types.Result {
 	ctx := types.ResultContext{Category: "Frontmatter", File: "SKILL.md"}
 	var results []types.Result

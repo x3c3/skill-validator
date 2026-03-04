@@ -12,7 +12,7 @@ import (
 	"github.com/dacharyc/skill-validator/util"
 )
 
-// ReportList formats cached results in list mode.
+// List formats cached results in list mode.
 func List(w io.Writer, results []*judge.CachedResult, skillDir, format string) error {
 	switch format {
 	case "json":
@@ -41,7 +41,7 @@ func List(w io.Writer, results []*judge.CachedResult, skillDir, format string) e
 	}
 }
 
-// ReportCompare formats cached results in comparison mode.
+// Compare formats cached results in comparison mode.
 func Compare(w io.Writer, results []*judge.CachedResult, skillDir, format string) error {
 	switch format {
 	case "json":
@@ -212,7 +212,7 @@ func dimValueByLabel(s types.Scored, label string) int {
 	return 0
 }
 
-// ReportDefault formats the most recent cached results per file.
+// Default formats the most recent cached results per file.
 func Default(w io.Writer, results []*judge.CachedResult, skillDir, format string) error {
 	latest := judge.LatestByFile(results)
 

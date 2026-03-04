@@ -1,3 +1,6 @@
+// Package content analyzes the textual content of SKILL.md files. It computes
+// metrics such as word count, code block ratio, imperative sentence ratio,
+// information density, and instruction specificity to assess content quality.
 package content
 
 import (
@@ -8,14 +11,16 @@ import (
 	"github.com/dacharyc/skill-validator/util"
 )
 
-// Strong directive language markers (pre-compiled for performance).
+// strongMarkerRes contains pre-compiled patterns for strong directive language
+// markers (must, always, never, etc.) used to measure instruction specificity.
 var strongMarkerRes = compilePatterns([]string{
 	`\bmust\b`, `\balways\b`, `\bnever\b`, `\bshall\b`,
 	`\brequired\b`, `\bdo not\b`, `\bdon't\b`, `\bensure\b`,
 	`\bcritical\b`, `\bmandatory\b`,
 })
 
-// Weak/advisory language markers (pre-compiled for performance).
+// weakMarkerRes contains pre-compiled patterns for weak/advisory language
+// markers (may, consider, could, etc.) used to measure instruction specificity.
 var weakMarkerRes = compilePatterns([]string{
 	`\bmay\b`, `\bconsider\b`, `\bcould\b`, `\bmight\b`,
 	`\boptional\b`, `\bpossibly\b`, `\bsuggested\b`,
@@ -30,7 +35,8 @@ func compilePatterns(patterns []string) []*regexp.Regexp {
 	return res
 }
 
-// Common imperative verbs for instructions
+// imperativeVerbs is the set of common imperative verbs used to detect
+// instruction-style sentences in skill content.
 var imperativeVerbs = map[string]bool{
 	"use": true, "run": true, "create": true, "add": true, "set": true,
 	"install": true, "configure": true, "write": true, "read": true,

@@ -1,3 +1,7 @@
+// Package judge provides LLM-based quality scoring for skill files. It sends
+// SKILL.md and reference file content to an LLM judge that rates them on
+// dimensions like clarity, actionability, token efficiency, and novelty.
+// Results are cached per provider/model/file to avoid redundant API calls.
 package judge
 
 import (
