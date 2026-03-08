@@ -30,6 +30,7 @@ Spec compliance is table stakes. `skill-validator` goes further: it checks that 
 - [CI Integration](#ci-integration)
   - [CI workflow example](#ci-workflow-example)
   - [Multi-skill directories](#multi-skill-directories)
+- [Examples](#examples)
 - [What it checks & why](#what-it-checks)
   - [Structure validation](#structure-validation-validate-structure)
   - [Link validation](#link-validation-validate-links)
@@ -127,7 +128,7 @@ client, err := judge.NewClient(judge.ClientOptions{
     Provider: "openai",
     APIKey:   os.Getenv("AZURE_OPENAI_API_KEY"),
     BaseURL:  "https://your-resource.openai.azure.com/openai/deployments/your-deployment",
-    Model:    "gpt-4o",
+    Model:    "gpt-5.2",
 })
 ```
 
@@ -303,7 +304,7 @@ skill-validator score evaluate path/to/references/api-guide.md
 | Provider | Env var | Default model | Covers |
 |---|---|---|---|
 | `anthropic` (default) | `ANTHROPIC_API_KEY` | `claude-sonnet-4-5-20250929` | Anthropic |
-| `openai` | `OPENAI_API_KEY` | `gpt-4o` | OpenAI, Ollama, Together, Groq, Azure, etc. |
+| `openai` | `OPENAI_API_KEY` | `gpt-5.2` | OpenAI, Ollama, Together, Groq, Azure, etc. |
 
 Use `--model` to override the default model and `--base-url` to point at any OpenAI-compatible endpoint (e.g. `http://localhost:11434/v1` for Ollama). If the endpoint requires a specific token limit parameter, use `--max-tokens-style` to override auto-detection:
 
@@ -600,6 +601,15 @@ Each skill is validated independently. The text output separates skills with a l
 ```
 
 If no `SKILL.md` is found at the root or in any immediate subdirectory, the validator exits with code 3 (CLI error).
+
+## Examples
+
+The [`examples/`](examples/) directory contains ready-to-use workflows that extend skill-validator:
+
+- **[review-skill](examples/review-skill/)** — An Agent Skill that walks a coding agent through a full skill review (structural validation, content checks, LLM scoring with Anthropic or OpenAI). Copy it into your agent's skill directory to iterate on skills during local development before requesting a human review.
+- **[ci](examples/ci/)** — A GitHub Actions workflow and companion script that validate changed skills on every pull request. Copy into your repo's `.github/` directory to enforce a minimum quality bar before merging.
+
+See the [examples README](examples/README.md) for setup instructions.
 
 ## What it checks
 
