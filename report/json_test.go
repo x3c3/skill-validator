@@ -400,7 +400,7 @@ func TestPrintJSON_ContaminationAnalysis(t *testing.T) {
 			CodeLanguages:        []string{"python", "javascript", "bash"},
 			LanguageCategories:   []string{"python", "javascript", "shell"},
 			PrimaryCategory:      "python",
-			MismatchedCategories: []string{"javascript", "shell"},
+			MismatchedCategories: []string{"javascript"},
 			LanguageMismatch:     true,
 			TechReferences:       []string{"javascript", "python"},
 			ScopeBreadth:         4,
@@ -446,8 +446,8 @@ func TestPrintJSON_ContaminationAnalysis(t *testing.T) {
 	}
 
 	mismatched := ca["mismatched_categories"].([]any)
-	if len(mismatched) != 2 {
-		t.Errorf("mismatched_categories length = %d, want 2", len(mismatched))
+	if len(mismatched) != 1 {
+		t.Errorf("mismatched_categories length = %d, want 1", len(mismatched))
 	}
 }
 

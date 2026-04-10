@@ -42,8 +42,9 @@ func TestAnalyze_LanguageMismatch(t *testing.T) {
 	if r.PrimaryCategory != "python" {
 		t.Errorf("expected primary category python, got %s", r.PrimaryCategory)
 	}
-	if len(r.MismatchedCategories) == 0 {
-		t.Error("expected mismatched categories")
+	// Only application↔application mismatches are reported; bash (shell) is excluded
+	if len(r.MismatchedCategories) != 1 || r.MismatchedCategories[0] != "javascript" {
+		t.Errorf("expected mismatched categories [javascript], got %v", r.MismatchedCategories)
 	}
 }
 
@@ -172,24 +173,21 @@ func TestMismatchWeight(t *testing.T) {
 }
 
 func TestAnalyze_AuxiliaryOnlyMismatches(t *testing.T) {
-	// python + bash + yaml: auxiliary mismatches should score low
+	// python + bash + yaml: auxiliary categories are not mismatches
 	languages := []string{"python", "python", "bash", "yaml"}
 	r := Analyze("deploy-skill", "Deploy with bash and config.", languages)
-	if !r.LanguageMismatch {
-		t.Error("expected language mismatch")
+	if r.LanguageMismatch {
+		t.Error("expected no language mismatch when only auxiliary categories differ")
 	}
-	// 2 auxiliary mismatches × 0.25 = 0.50 weighted → 0.4 × (0.50/3) ≈ 0.067
-	// No multi-interface tool, scope breadth = 3 → factor3 = 0.3 * (1/4) = 0.075
-	// Total ≈ 0.142, should be low
+	if len(r.MismatchedCategories) != 0 {
+		t.Errorf("expected no mismatched categories, got %v", r.MismatchedCategories)
+	}
+	if len(r.MismatchWeights) != 0 {
+		t.Errorf("expected no mismatch weights, got %v", r.MismatchWeights)
+	}
+	// Score should be very low with no mismatches
 	if r.ContaminationLevel != "low" {
 		t.Errorf("expected low contamination for python+bash+yaml, got %s (score=%f)", r.ContaminationLevel, r.ContaminationScore)
-	}
-	// Verify weights are populated
-	if w, ok := r.MismatchWeights["shell"]; !ok || w != 0.25 {
-		t.Errorf("expected shell weight 0.25, got %f (ok=%v)", w, ok)
-	}
-	if w, ok := r.MismatchWeights["config"]; !ok || w != 0.25 {
-		t.Errorf("expected config weight 0.25, got %f (ok=%v)", w, ok)
 	}
 }
 
@@ -213,16 +211,65 @@ func TestAnalyze_ApplicationOnlyMismatches(t *testing.T) {
 }
 
 func TestAnalyze_MixedMismatches(t *testing.T) {
-	// java + config + shell + markup: 3 auxiliary mismatches
+	// java + config + shell + markup: all auxiliary, no app↔app mismatch
 	languages := []string{"java", "java", "yaml", "bash", "html"}
 	r := Analyze("spring-boot", "Spring Boot app with config.", languages)
-	if !r.LanguageMismatch {
-		t.Error("expected language mismatch")
+	if r.LanguageMismatch {
+		t.Error("expected no language mismatch when only auxiliary categories differ from primary")
 	}
-	// 3 auxiliary mismatches × 0.25 = 0.75 weighted → 0.4 × (0.75/3) = 0.1
-	// Should be significantly lower than old score of 0.4 × (3/3) = 0.4
-	if r.ContaminationScore >= 0.4 {
-		t.Errorf("expected score < 0.4 for java+config+shell+markup, got %f", r.ContaminationScore)
+	if len(r.MismatchedCategories) != 0 {
+		t.Errorf("expected no mismatched categories, got %v", r.MismatchedCategories)
+	}
+}
+
+func TestAnalyze_AppAndAuxMixed(t *testing.T) {
+	// python + javascript + bash + yaml: only javascript is an app mismatch
+	languages := []string{"python", "python", "javascript", "bash", "yaml"}
+	r := Analyze("mixed-skill", "Some content.", languages)
+	if !r.LanguageMismatch {
+		t.Error("expected language mismatch for app↔app")
+	}
+	if len(r.MismatchedCategories) != 1 || r.MismatchedCategories[0] != "javascript" {
+		t.Errorf("expected mismatched categories [javascript], got %v", r.MismatchedCategories)
+	}
+	// bash and yaml should not appear in weights
+	if _, ok := r.MismatchWeights["shell"]; ok {
+		t.Error("shell should not be in mismatch weights")
+	}
+	if _, ok := r.MismatchWeights["config"]; ok {
+		t.Error("config should not be in mismatch weights")
+	}
+}
+
+func TestAnalyze_AuxPrimaryWithAppMismatch(t *testing.T) {
+	// bash appears most often (overall primary is shell/auxiliary),
+	// but javascript and python are both present → app↔app mismatch
+	languages := []string{"bash", "bash", "bash", "javascript", "python"}
+	r := Analyze("scripty-skill", "Some content.", languages)
+	if r.PrimaryCategory != "shell" {
+		t.Errorf("expected overall primary category shell, got %s", r.PrimaryCategory)
+	}
+	if !r.LanguageMismatch {
+		t.Error("expected language mismatch between javascript and python")
+	}
+	// Primary app category should be first-encountered app (javascript)
+	if len(r.MismatchedCategories) != 1 || r.MismatchedCategories[0] != "python" {
+		t.Errorf("expected mismatched categories [python], got %v", r.MismatchedCategories)
+	}
+}
+
+func TestAnalyze_PurelyAuxiliary(t *testing.T) {
+	// Only auxiliary languages — no application languages at all
+	languages := []string{"bash", "yaml", "json", "sh"}
+	r := Analyze("config-skill", "Just config and shell.", languages)
+	if r.LanguageMismatch {
+		t.Error("expected no language mismatch with only auxiliary languages")
+	}
+	if len(r.MismatchedCategories) != 0 {
+		t.Errorf("expected no mismatched categories, got %v", r.MismatchedCategories)
+	}
+	if r.ContaminationScore >= 0.2 {
+		t.Errorf("expected low score for purely auxiliary languages, got %f", r.ContaminationScore)
 	}
 }
 
