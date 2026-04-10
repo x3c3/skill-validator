@@ -556,10 +556,10 @@ func TestPrint_ContaminationAnalysis_Medium(t *testing.T) {
 			ContaminationLevel:   "medium",
 			ContaminationScore:   0.35,
 			ScopeBreadth:         3,
-			CodeLanguages:        []string{"python", "bash"},
-			LanguageCategories:   []string{"python", "shell"},
+			CodeLanguages:        []string{"python", "javascript"},
+			LanguageCategories:   []string{"python", "javascript"},
 			PrimaryCategory:      "python",
-			MismatchedCategories: []string{"shell"},
+			MismatchedCategories: []string{"javascript"},
 			LanguageMismatch:     true,
 		},
 	}
@@ -571,8 +571,8 @@ func TestPrint_ContaminationAnalysis_Medium(t *testing.T) {
 	if !strings.Contains(output, colorYellow+"medium") {
 		t.Error("expected yellow color for medium level")
 	}
-	if !strings.Contains(output, "Language mismatch: shell") {
-		t.Error("expected language mismatch warning with shell")
+	if !strings.Contains(output, "Language mismatch: javascript") {
+		t.Error("expected language mismatch warning with javascript")
 	}
 	if !strings.Contains(output, "1 category differ from primary") {
 		t.Error("expected singular category count")
@@ -590,7 +590,7 @@ func TestPrint_ContaminationAnalysis_High(t *testing.T) {
 			CodeLanguages:        []string{"python", "javascript", "bash", "ruby"},
 			LanguageCategories:   []string{"python", "javascript", "shell", "ruby"},
 			PrimaryCategory:      "python",
-			MismatchedCategories: []string{"javascript", "ruby", "shell"},
+			MismatchedCategories: []string{"javascript", "ruby"},
 			LanguageMismatch:     true,
 			MultiInterfaceTools:  []string{"mongodb"},
 		},
@@ -606,7 +606,7 @@ func TestPrint_ContaminationAnalysis_High(t *testing.T) {
 	if !strings.Contains(output, "Multi-interface tool detected: mongodb") {
 		t.Error("expected multi-interface tool warning")
 	}
-	if !strings.Contains(output, "3 categories differ") {
+	if !strings.Contains(output, "2 categories differ") {
 		t.Error("expected plural categories count")
 	}
 	if !strings.Contains(output, "Scope breadth: 5") {

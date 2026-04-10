@@ -273,7 +273,7 @@ Detects cross-language contamination — skills where code examples in one langu
 Contamination Analysis
   Contamination level: medium (score: 0.35)
   Primary language category: javascript
-  ⚠ Language mismatch: python, shell (2 categories differ from primary)
+  ⚠ Language mismatch: python (1 category differ from primary)
   ℹ Multi-interface tool detected: mongodb
   Scope breadth: 4
 
@@ -282,7 +282,7 @@ References Contamination Analysis
   Scope breadth: 0
 ```
 
-Contamination scoring considers three factors: multi-interface tools (0.3 weight), language mismatch across code blocks (0.4 weight), and scope breadth (0.3 weight). Reference files in `references/` are analyzed in aggregate. Use `--per-file` to see a breakdown by individual reference file.
+Contamination scoring considers three factors: multi-interface tools (0.3 weight), application language mismatch across code blocks (0.4 weight), and scope breadth (0.3 weight). Auxiliary languages (shell, config formats, query languages, markup) are excluded from the mismatch calculation since they don't cause syntactic confusion with application languages. Reference files in `references/` are analyzed in aggregate. Use `--per-file` to see a breakdown by individual reference file.
 
 ### check
 
@@ -790,10 +790,10 @@ Detects cross-language contamination — where code examples in one language cou
 
 - **Multi-interface tools**: detects tools with many language bindings (MongoDB, AWS, Docker, Kubernetes, Redis, etc.) by scanning the skill name and content
 - **Language categories**: maps code block languages to broad categories (shell, javascript, python, java, systems, config, etc.)
-- **Language mismatch**: code blocks spanning different language categories
+- **Language mismatch**: code blocks spanning different application language categories (auxiliary categories like shell, config, query, and markup are excluded)
 - **Technology references**: framework/runtime mentions (Node.js, Django, Flask, Spring, Rails, etc.)
 - **Scope breadth**: number of distinct technology categories referenced
-- **Contamination score**: 3-factor formula — multi_interface (0.3) + mismatch (0.4) + breadth (0.3), capped at 1.0
+- **Contamination score**: 3-factor formula — multi_interface (0.3) + application language mismatch (0.4) + breadth (0.3), capped at 1.0
 - **Contamination level**: high (≥0.5), medium (≥0.2), low (<0.2)
 
 ### LLM scoring (`score evaluate`)

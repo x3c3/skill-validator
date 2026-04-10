@@ -435,6 +435,54 @@ func TestRunContaminationAnalysis_RichSkill(t *testing.T) {
 	}
 }
 
+func TestRunContaminationAnalysis_RichSkill_AppMismatch(t *testing.T) {
+	dir := fixtureDir(t, "rich-skill")
+	r := RunContaminationAnalysis(dir)
+	cr := r.ContaminationReport
+	if cr == nil {
+		t.Fatal("expected ContaminationReport")
+	}
+	// rich-skill has bash+javascript+python+yaml: javascript↔python is app↔app mismatch
+	if !cr.LanguageMismatch {
+		t.Error("expected language mismatch for javascript↔python")
+	}
+	// Auxiliary categories (shell, config) should NOT appear in mismatches
+	for _, cat := range cr.MismatchedCategories {
+		if cat == "shell" || cat == "config" {
+			t.Errorf("auxiliary category %q should not be in mismatched categories", cat)
+		}
+	}
+
+	var buf bytes.Buffer
+	report.Print(&buf, r, false)
+	output := buf.String()
+	if !strings.Contains(output, "Language mismatch") {
+		t.Error("expected Language mismatch warning in output for app↔app mismatch")
+	}
+}
+
+func TestRunContaminationAnalysis_AuxiliaryOnly_NoMismatch(t *testing.T) {
+	dir := fixtureDir(t, "auxiliary-only-skill")
+	r := RunContaminationAnalysis(dir)
+	cr := r.ContaminationReport
+	if cr == nil {
+		t.Fatal("expected ContaminationReport")
+	}
+	if cr.LanguageMismatch {
+		t.Error("expected no language mismatch for auxiliary-only languages")
+	}
+	if len(cr.MismatchedCategories) != 0 {
+		t.Errorf("expected no mismatched categories, got %v", cr.MismatchedCategories)
+	}
+
+	var buf bytes.Buffer
+	report.Print(&buf, r, false)
+	output := buf.String()
+	if strings.Contains(output, "Language mismatch") {
+		t.Error("Language mismatch warning should not appear for auxiliary-only languages")
+	}
+}
+
 func TestRunContaminationAnalysis_BrokenDir(t *testing.T) {
 	dir := t.TempDir()
 	r := RunContaminationAnalysis(dir)

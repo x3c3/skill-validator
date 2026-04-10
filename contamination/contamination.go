@@ -138,12 +138,19 @@ func Analyze(name, content string, codeLanguages []string) *types.ContaminationR
 	}
 	scopeBreadth := len(allScopes)
 
-	// Detect language mismatch
+	// Detect language mismatch (application↔application only).
+	// Auxiliary categories (shell, config, query, markup) are expected alongside
+	// any primary language and do not cause syntactic confusion, so they are
+	// excluded from the mismatch set. The primary application category is
+	// determined separately from the overall primary, since a skill's most
+	// common language may be auxiliary (e.g. bash) while still mixing multiple
+	// application languages.
 	primaryCategory := findPrimaryCategory(codeLanguages)
+	primaryAppCategory := findPrimaryApplicationCategory(codeLanguages)
 	mismatchedCategories := make(map[string]bool)
-	if primaryCategory != "" {
+	if primaryAppCategory != "" {
 		for cat := range langCategories {
-			if cat != primaryCategory {
+			if cat != primaryAppCategory && applicationCategories[cat] {
 				mismatchedCategories[cat] = true
 			}
 		}
@@ -273,6 +280,45 @@ func findPrimaryCategory(codeLanguages []string) string {
 	}
 
 	// Find most common category; ties broken by first-encountered order
+	maxCount := 0
+	primary := ""
+	for _, cat := range order {
+		if counts[cat] > maxCount {
+			maxCount = counts[cat]
+			primary = cat
+		}
+	}
+	return primary
+}
+
+// findPrimaryApplicationCategory returns the most common application language
+// category (ignoring auxiliary categories like shell, config, query, markup).
+func findPrimaryApplicationCategory(codeLanguages []string) string {
+	if len(codeLanguages) == 0 {
+		return ""
+	}
+
+	counts := make(map[string]int)
+	var order []string
+	seen := make(map[string]bool)
+	for _, lang := range codeLanguages {
+		langLower := strings.ToLower(lang)
+		for category, members := range languageCategories {
+			if members[langLower] && applicationCategories[category] {
+				counts[category]++
+				if !seen[category] {
+					seen[category] = true
+					order = append(order, category)
+				}
+				break
+			}
+		}
+	}
+
+	if len(counts) == 0 {
+		return ""
+	}
+
 	maxCount := 0
 	primary := ""
 	for _, cat := range order {
