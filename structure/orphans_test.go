@@ -378,6 +378,56 @@ func TestCheckOrphanFiles(t *testing.T) {
 	})
 }
 
+func TestContainsReference(t *testing.T) {
+	t.Run("forward-slash path matches markdown text", func(t *testing.T) {
+		// Inventory paths are normalized to forward slashes; markdown uses forward slashes.
+		if !containsReference("See references/other.md for details.", "", "references/other.md") {
+			t.Error("expected forward-slash inventory path to match forward-slash markdown reference")
+		}
+	})
+
+	t.Run("relative path from subdirectory matches", func(t *testing.T) {
+		// Source is in references/, relPath is references/images/diagram.png,
+		// so the relative path is images/diagram.png.
+		text := "See ![diagram](images/diagram.png)."
+		if !containsReference(text, "references", "references/images/diagram.png") {
+			t.Error("expected relative path from subdirectory to match")
+		}
+	})
+}
+
+func TestFilesInDir(t *testing.T) {
+	t.Run("forward-slash inventory matches directory prefix", func(t *testing.T) {
+		inventory := []string{
+			"references/guide.md",
+			"references/other.md",
+			"scripts/setup.sh",
+		}
+		got := filesInDir(inventory, "references")
+		if len(got) != 2 {
+			t.Errorf("expected 2 files in references/, got %d: %v", len(got), got)
+		}
+	})
+}
+
+func TestPythonImportReaches(t *testing.T) {
+	t.Run("dotted import resolves with forward slashes", func(t *testing.T) {
+		// "from helpers.merge_runs import merge" in scripts/main.py should
+		// resolve to scripts/helpers/merge_runs.py (forward slashes).
+		text := "from helpers.merge_runs import merge"
+		if !pythonImportReaches(text, "scripts/main.py", "scripts/helpers/merge_runs.py") {
+			t.Error("expected dotted Python import to resolve to forward-slash path")
+		}
+	})
+
+	t.Run("relative import resolves with forward slashes", func(t *testing.T) {
+		text := "from .utils import helper"
+		if !pythonImportReaches(text, "scripts/pkg/main.py", "scripts/pkg/utils.py") {
+			t.Error("expected relative Python import to resolve to forward-slash path")
+		}
+	})
+}
+
 func TestCheckFlatOrphanFiles(t *testing.T) {
 	t.Run("all root files referenced", func(t *testing.T) {
 		dir := t.TempDir()

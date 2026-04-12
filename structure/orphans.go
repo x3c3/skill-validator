@@ -204,7 +204,7 @@ func inventoryFiles(dir string) []string {
 				return nil
 			}
 			rel, _ := filepath.Rel(dir, path)
-			files = append(files, rel)
+			files = append(files, filepath.ToSlash(rel))
 			return nil
 		})
 		if err != nil {
@@ -216,7 +216,7 @@ func inventoryFiles(dir string) []string {
 
 // filesInDir returns inventory entries that start with the given directory prefix.
 func filesInDir(inventory []string, dir string) []string {
-	prefix := dir + string(filepath.Separator)
+	prefix := dir + "/"
 	var out []string
 	for _, f := range inventory {
 		if strings.HasPrefix(f, prefix) {
@@ -239,8 +239,10 @@ func containsReference(text, sourceDir, relPath string) bool {
 	// path relative to that directory appears in the text.
 	if sourceDir != "" {
 		rel, err := filepath.Rel(sourceDir, relPath)
-		if err == nil && !strings.HasPrefix(rel, "..") && strings.Contains(text, rel) {
-			return true
+		if err == nil && !strings.HasPrefix(rel, "..") {
+			if strings.Contains(text, filepath.ToSlash(rel)) {
+				return true
+			}
 		}
 	}
 	return false
@@ -313,10 +315,10 @@ func pythonImportReaches(text, source, relPath string) bool {
 		}
 
 		// Convert dotted module path to file path: helpers.merge_runs → helpers/merge_runs
-		modulePath := strings.ReplaceAll(module, ".", string(filepath.Separator))
+		modulePath := strings.ReplaceAll(module, ".", "/")
 
 		// Try resolving as a .py file relative to the source directory.
-		candidate := filepath.Join(resolveDir, modulePath+".py")
+		candidate := filepath.ToSlash(filepath.Join(resolveDir, modulePath+".py"))
 		if candidate == relPath {
 			return true
 		}
@@ -350,8 +352,8 @@ func pythonPackageInits(text, source, dir string) []string {
 			continue
 		}
 
-		modulePath := strings.ReplaceAll(module, ".", string(filepath.Separator))
-		initPath := filepath.Join(resolveDir, modulePath, "__init__.py")
+		modulePath := strings.ReplaceAll(module, ".", "/")
+		initPath := filepath.ToSlash(filepath.Join(resolveDir, modulePath, "__init__.py"))
 
 		// Check if the __init__.py actually exists on disk.
 		if _, err := os.Stat(filepath.Join(dir, initPath)); err == nil {
