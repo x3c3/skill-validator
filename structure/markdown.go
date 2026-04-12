@@ -39,7 +39,7 @@ func CheckMarkdown(dir, body string) []types.Result {
 		if err != nil {
 			continue
 		}
-		relPath := filepath.Join("references", entry.Name())
+		relPath := "references/" + entry.Name()
 		if line, ok := FindUnclosedFence(string(data)); ok {
 			results = append(results, ctx.ErrorAtLinef(relPath, line,
 				"%s has an unclosed code fence starting at line %d — this may cause agents to misinterpret everything after it as code", relPath, line))

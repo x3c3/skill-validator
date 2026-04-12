@@ -81,13 +81,13 @@ func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenC
 			path := filepath.Join(refsDir, entry.Name())
 			data, err := os.ReadFile(path)
 			if err != nil {
-				relPath := filepath.Join("references", entry.Name())
+				relPath := "references/" + entry.Name()
 				results = append(results, ctx.WarnFilef(relPath, "could not read %s: %v", relPath, err))
 				continue
 			}
 			tokens, _, _ := enc.Encode(string(data))
 			fileTokens := len(tokens)
-			relPath := filepath.Join("references", entry.Name())
+			relPath := "references/" + entry.Name()
 			counts = append(counts, types.TokenCount{
 				File:   relPath,
 				Tokens: fileTokens,
@@ -251,7 +251,7 @@ func countAssetFiles(dir string, enc tokenizer.Codec) []types.TokenCount {
 		}
 		rel, _ := filepath.Rel(dir, path)
 		tokens, _, _ := enc.Encode(string(data))
-		counts = append(counts, types.TokenCount{File: rel, Tokens: len(tokens)})
+		counts = append(counts, types.TokenCount{File: filepath.ToSlash(rel), Tokens: len(tokens)})
 		return nil
 	})
 
@@ -323,7 +323,7 @@ func countFilesInDir(rootDir, dirName string, enc tokenizer.Codec) []types.Token
 		}
 		rel, _ := filepath.Rel(rootDir, path)
 		tokens, _, _ := enc.Encode(string(data))
-		counts = append(counts, types.TokenCount{File: rel, Tokens: len(tokens)})
+		counts = append(counts, types.TokenCount{File: filepath.ToSlash(rel), Tokens: len(tokens)})
 		return nil
 	})
 

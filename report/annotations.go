@@ -49,7 +49,7 @@ func formatAnnotation(skillDir string, res types.Result, workDir string) string 
 		if err != nil {
 			relPath = absPath // fall back to absolute if Rel fails
 		}
-		params = fmt.Sprintf(" file=%s", relPath)
+		params = fmt.Sprintf(" file=%s", filepath.ToSlash(relPath))
 		if res.Line > 0 {
 			params += fmt.Sprintf(",line=%d", res.Line)
 		}

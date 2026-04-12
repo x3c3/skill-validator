@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.4]
+
+### Fixed
+
+- Fix false-positive orphan warnings on Windows: file paths from the filesystem
+  are now normalized to forward slashes before comparing against markdown
+  references ([#63]).
+- Fix code block detection on Windows: fenced code block regexes now handle
+  CRLF line endings, fixing zero code-block counts when files are checked out
+  with Windows-style line endings.
+- Fix backslash paths in token count keys, result messages, and GitHub Actions
+  annotations on Windows.
+- Add Windows (`windows-latest`) to CI test matrix.
+
+## [1.5.3]
+
+### Fixed
+
+- Contamination warnings now only fire when multiple application programming
+  languages are detected. Skills containing only auxiliary languages (shell,
+  config formats) no longer trigger false positives ([#60], [#62]).
+
 ## [1.5.2]
 
 ### Fixed
@@ -167,17 +189,28 @@ First stable release. Includes the complete CLI and importable library packages.
 - `types` — shared data types (`Report`, `Result`, `Level`, etc.)
 - `judge.LLMClient` interface for custom LLM providers
 
+[1.5.4]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.3...v1.5.4
+[1.5.3]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.0...v1.5.1
+[1.5.0]: https://github.com/agent-ecosystem/skill-validator/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/agent-ecosystem/skill-validator/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/agent-ecosystem/skill-validator/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/agent-ecosystem/skill-validator/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/agent-ecosystem/skill-validator/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/agent-ecosystem/skill-validator/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/agent-ecosystem/skill-validator/compare/v1.0.0...v1.1.0
+[#23]: https://github.com/agent-ecosystem/skill-validator/issues/23
+[#26]: https://github.com/agent-ecosystem/skill-validator/issues/26
+[#27]: https://github.com/agent-ecosystem/skill-validator/issues/27
 [#33]: https://github.com/agent-ecosystem/skill-validator/issues/33
 [#34]: https://github.com/agent-ecosystem/skill-validator/pull/34
 [#35]: https://github.com/agent-ecosystem/skill-validator/pull/35
 [#37]: https://github.com/agent-ecosystem/skill-validator/pull/37
-[#26]: https://github.com/agent-ecosystem/skill-validator/issues/26
-[#23]: https://github.com/agent-ecosystem/skill-validator/issues/23
-[#27]: https://github.com/agent-ecosystem/skill-validator/issues/27
 [#39]: https://github.com/agent-ecosystem/skill-validator/issues/39
+[#43]: https://github.com/agent-ecosystem/skill-validator/issues/43
+[#44]: https://github.com/agent-ecosystem/skill-validator/pull/44
+[#45]: https://github.com/agent-ecosystem/skill-validator/issues/45
+[#60]: https://github.com/agent-ecosystem/skill-validator/issues/60
+[#62]: https://github.com/agent-ecosystem/skill-validator/pull/62
+[#63]: https://github.com/agent-ecosystem/skill-validator/issues/63

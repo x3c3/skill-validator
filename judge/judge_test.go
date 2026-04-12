@@ -641,8 +641,9 @@ func TestLatestByFile_Empty(t *testing.T) {
 
 func TestCacheDir(t *testing.T) {
 	dir := CacheDir("/path/to/skill")
-	if dir != "/path/to/skill/.score_cache" {
-		t.Errorf("got %s, want /path/to/skill/.score_cache", dir)
+	want := filepath.Join("/path/to/skill", ".score_cache")
+	if dir != want {
+		t.Errorf("got %s, want %s", dir, want)
 	}
 }
 
