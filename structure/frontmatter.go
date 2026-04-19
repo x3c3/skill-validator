@@ -117,6 +117,11 @@ const (
 	// maxShortSegmentPct is the percentage of comma segments that must be
 	// "short" (≤3 words) for the comma-list heuristic to fire.
 	maxShortSegmentPct = 60
+
+	// minAvgWordsPerSegment is the minimum average words per comma-separated
+	// segment. Sentences at or above this density are considered prose with
+	// inline lists rather than keyword dumps, even if many segments are short.
+	minAvgWordsPerSegment = 3
 )
 
 func checkDescriptionKeywordStuffing(ctx types.ResultContext, desc string) []types.Result {
@@ -165,11 +170,18 @@ func checkDescriptionKeywordStuffing(ctx types.ResultContext, desc string) []typ
 		}
 		if len(segments) >= minCommaSegments {
 			shortCount := 0
+			totalWords := 0
 			for _, seg := range segments {
 				words := strings.Fields(strings.TrimSpace(seg))
+				totalWords += len(words)
 				if len(words) <= 3 {
 					shortCount++
 				}
+			}
+			// Sentences with enough prose density are not keyword dumps,
+			// even if many individual segments are short.
+			if totalWords >= minAvgWordsPerSegment*len(segments) {
+				continue
 			}
 			if shortCount*100/len(segments) >= maxShortSegmentPct {
 				return []types.Result{ctx.Warnf(

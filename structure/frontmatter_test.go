@@ -237,6 +237,14 @@ func TestCheckFrontmatter_KeywordStuffing(t *testing.T) {
 		requireResultContaining(t, results, types.Warning, "comma-separated segments")
 	})
 
+	t.Run("prose with inline enumeration is fine (issue #71)", func(t *testing.T) {
+		desc := "Helps agents write and edit interface copy (microcopy) for digital products — buttons, labels, error messages, forms, onboarding flows, empty states, and help text. Use this skill whenever you need to produce or improve any text that appears in an app, website, or software UI. It applies four core quality standards (purposeful, concise, conversational, and clear) and ships with accessibility guidelines, research-backed readability benchmarks, error-message patterns, tone adaptation frameworks, and fillable templates."
+		s := makeSkill("/tmp/my-skill", "my-skill", desc)
+		results := CheckFrontmatter(s, Options{})
+		requireNoResultContaining(t, results, types.Warning, "keyword")
+		requireNoResultContaining(t, results, types.Warning, "comma-separated")
+	})
+
 	t.Run("description with abbreviations splits correctly", func(t *testing.T) {
 		desc := "Use for e.g. vector search and embedding workflows. Supports multiple backends, distributed indexing, and query optimization."
 		s := makeSkill("/tmp/my-skill", "my-skill", desc)
