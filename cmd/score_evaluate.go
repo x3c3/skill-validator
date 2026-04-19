@@ -38,8 +38,13 @@ The path can be:
   - A specific .md file — scores just that reference file
 
 Requires an API key via environment variable:
-  ANTHROPIC_API_KEY (for --provider anthropic, the default)
-  OPENAI_API_KEY    (for --provider openai)
+  ANTHROPIC_API_KEY  (for --provider anthropic, the default)
+  OPENAI_API_KEY     (for --provider openai)
+
+Optional OpenAI environment variables:
+  OPENAI_BASE_URL    (API base URL; overridden by --base-url flag)
+  OPENAI_ORG_ID      (organization ID; sent as OpenAI-Organization header)
+  OPENAI_PROJECT_ID  (project ID; sent as OpenAI-Project header)
 
 The claude-cli provider uses the locally installed "claude" CLI and does not
 require an API key. This is useful when the CLI is already authenticated
@@ -88,12 +93,25 @@ func runScoreEvaluate(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// For the openai provider, read optional env vars for base URL, org, and project.
+	baseURL := evalBaseURL
+	var orgID, projectID string
+	if strings.ToLower(evalProvider) == "openai" {
+		if baseURL == "" {
+			baseURL = os.Getenv("OPENAI_BASE_URL")
+		}
+		orgID = os.Getenv("OPENAI_ORG_ID")
+		projectID = os.Getenv("OPENAI_PROJECT_ID")
+	}
+
 	client, err := judge.NewClient(judge.ClientOptions{
 		Provider:       evalProvider,
 		APIKey:         apiKey,
-		BaseURL:        evalBaseURL,
+		BaseURL:        baseURL,
 		Model:          evalModel,
 		MaxTokensStyle: evalMaxTokensStyle,
+		OrgID:          orgID,
+		ProjectID:      projectID,
 	})
 	if err != nil {
 		return err
