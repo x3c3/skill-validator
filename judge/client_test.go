@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 // stubLookPath replaces the lookPath variable for the duration of a test,
@@ -138,6 +140,146 @@ func TestUseMaxCompletionTokens(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsOpenAIHost(t *testing.T) {
+	tests := []struct {
+		baseURL string
+		want    bool
+	}{
+		{"https://api.openai.com/v1", true},
+		{"https://us.api.openai.com/v1", true},
+		{"https://eu.api.openai.com/v1", true},
+		{"http://localhost:11434/v1", false},
+		{"https://my-proxy.example.com/v1", false},
+		{"https://notopenai.com/v1", false},
+		{"not a url", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.baseURL, func(t *testing.T) {
+			got := isOpenAIHost(tt.baseURL)
+			if got != tt.want {
+				t.Errorf("isOpenAIHost(%q) = %v, want %v", tt.baseURL, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestOpenAIClient_OrgProjectHeaders(t *testing.T) {
+	t.Run("headers sent for openai.com", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if got := r.Header.Get("OpenAI-Organization"); got != "org-123" {
+				t.Errorf("OpenAI-Organization = %q, want %q", got, "org-123")
+			}
+			if got := r.Header.Get("OpenAI-Project"); got != "proj-456" {
+				t.Errorf("OpenAI-Project = %q, want %q", got, "proj-456")
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = fmt.Fprint(w, `{"choices": [{"message": {"content": "ok"}}]}`)
+		}))
+		defer server.Close()
+
+		// The test server isn't on openai.com, so we construct the client directly
+		// to test the header logic with an openai.com baseURL that actually points
+		// at the test server. Instead, we test the client with the test server URL
+		// and verify via a different approach: construct the openaiClient directly.
+		c := &openaiClient{
+			apiKey:    "test-key",
+			baseURL:   "https://api.openai.com/v1",
+			model:     "gpt-4o",
+			maxTokens: 500,
+			orgID:     "org-123",
+			projectID: "proj-456",
+		}
+
+		// Override defaultHTTPClient to proxy to test server
+		origClient := defaultHTTPClient
+		defer func() { defaultHTTPClient = origClient }()
+
+		// Use a custom transport that rewrites the host to the test server
+		testURL := server.URL
+		defaultHTTPClient = &http.Client{
+			Timeout:   5 * time.Second,
+			Transport: &rewriteTransport{target: testURL},
+		}
+
+		_, err := c.Complete(t.Context(), "system", "user")
+		if err != nil {
+			t.Fatalf("Complete failed: %v", err)
+		}
+	})
+
+	t.Run("headers not sent for custom base URL", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if got := r.Header.Get("OpenAI-Organization"); got != "" {
+				t.Errorf("OpenAI-Organization should be empty for non-OpenAI host, got %q", got)
+			}
+			if got := r.Header.Get("OpenAI-Project"); got != "" {
+				t.Errorf("OpenAI-Project should be empty for non-OpenAI host, got %q", got)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = fmt.Fprint(w, `{"choices": [{"message": {"content": "ok"}}]}`)
+		}))
+		defer server.Close()
+
+		client, err := NewClient(ClientOptions{
+			Provider:  "openai",
+			APIKey:    "test-key",
+			BaseURL:   server.URL,
+			Model:     "llama3",
+			OrgID:     "org-123",
+			ProjectID: "proj-456",
+		})
+		if err != nil {
+			t.Fatalf("NewClient: %v", err)
+		}
+		_, err = client.Complete(t.Context(), "system", "user")
+		if err != nil {
+			t.Fatalf("Complete failed: %v", err)
+		}
+	})
+
+	t.Run("empty org and project not sent", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if got := r.Header.Get("OpenAI-Organization"); got != "" {
+				t.Errorf("OpenAI-Organization should be empty, got %q", got)
+			}
+			if got := r.Header.Get("OpenAI-Project"); got != "" {
+				t.Errorf("OpenAI-Project should be empty, got %q", got)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = fmt.Fprint(w, `{"choices": [{"message": {"content": "ok"}}]}`)
+		}))
+		defer server.Close()
+
+		client, err := NewClient(ClientOptions{
+			Provider: "openai",
+			APIKey:   "test-key",
+			BaseURL:  server.URL,
+			Model:    "gpt-4o",
+		})
+		if err != nil {
+			t.Fatalf("NewClient: %v", err)
+		}
+		_, err = client.Complete(t.Context(), "system", "user")
+		if err != nil {
+			t.Fatalf("Complete failed: %v", err)
+		}
+	})
+}
+
+// rewriteTransport rewrites requests to a different target URL while
+// preserving the original Host header for testing.
+type rewriteTransport struct {
+	target string
+}
+
+func (t *rewriteTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	targetURL, _ := url.Parse(t.target)
+	req.URL.Scheme = targetURL.Scheme
+	req.URL.Host = targetURL.Host
+	return http.DefaultTransport.RoundTrip(req)
 }
 
 func TestMaxTokensStyleOverride(t *testing.T) {

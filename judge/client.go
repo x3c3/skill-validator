@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"strings"
 	"time"
@@ -38,6 +39,8 @@ type ClientOptions struct {
 	Model             string // Optional; defaults per provider
 	MaxTokensStyle    string // "auto", "max_tokens", or "max_completion_tokens"
 	MaxResponseTokens int    // Maximum tokens in the LLM response; 0 defaults to 500
+	OrgID             string // Optional OpenAI organization ID; sent as OpenAI-Organization header
+	ProjectID         string // Optional OpenAI project ID; sent as OpenAI-Project header
 }
 
 // NewClient creates an LLMClient for the given options.
@@ -84,7 +87,7 @@ func NewClient(opts ClientOptions) (LLMClient, error) {
 			baseURL = "https://api.openai.com/v1"
 		}
 		baseURL = strings.TrimRight(baseURL, "/")
-		return &openaiClient{apiKey: opts.APIKey, baseURL: baseURL, model: model, maxTokensStyle: opts.MaxTokensStyle, maxTokens: maxResp}, nil
+		return &openaiClient{apiKey: opts.APIKey, baseURL: baseURL, model: model, maxTokensStyle: opts.MaxTokensStyle, maxTokens: maxResp, orgID: opts.OrgID, projectID: opts.ProjectID}, nil
 	default:
 		return nil, fmt.Errorf("unsupported provider %q (use \"anthropic\", \"openai\", or \"claude-cli\")", opts.Provider)
 	}
@@ -186,10 +189,24 @@ type openaiClient struct {
 	model          string
 	maxTokensStyle string
 	maxTokens      int
+	orgID          string
+	projectID      string
 }
 
 func (c *openaiClient) Provider() string  { return "openai" }
 func (c *openaiClient) ModelName() string { return c.model }
+
+// isOpenAIHost reports whether the given base URL points to an OpenAI endpoint
+// (api.openai.com, us.api.openai.com, etc.) as opposed to a third-party
+// compatible API like Ollama or vLLM.
+func isOpenAIHost(baseURL string) bool {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return false
+	}
+	host := u.Hostname()
+	return strings.HasSuffix(host, ".openai.com")
+}
 
 type openaiRequest struct {
 	Model               string          `json:"model"`
@@ -265,6 +282,17 @@ func (c *openaiClient) Complete(ctx context.Context, systemPrompt, userContent s
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+
+	// Only send OpenAI-specific org/project headers when targeting an
+	// OpenAI endpoint, so they don't leak to Ollama or other compatible APIs.
+	if isOpenAIHost(c.baseURL) {
+		if c.orgID != "" {
+			req.Header.Set("OpenAI-Organization", c.orgID)
+		}
+		if c.projectID != "" {
+			req.Header.Set("OpenAI-Project", c.projectID)
+		}
+	}
 
 	resp, err := defaultHTTPClient.Do(req)
 	if err != nil {

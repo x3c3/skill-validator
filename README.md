@@ -334,10 +334,12 @@ skill-validator score evaluate --provider claude-cli <path>
 | Provider | Env var | Default model | Covers |
 |---|---|---|---|
 | `anthropic` (default) | `ANTHROPIC_API_KEY` | `claude-sonnet-4-5-20250929` | Anthropic |
-| `openai` | `OPENAI_API_KEY` | `gpt-5.2` | OpenAI, Ollama, Together, Groq, Azure, etc. |
+| `openai` | `OPENAI_API_KEY` | `gpt-5.2` | OpenAI, Ollama, Together, Groq, Azure, etc. \*\* |
 | `claude-cli` | _(none)_ | `sonnet` | Claude CLI (uses locally authenticated `claude` binary) \* |
 
 \* **Accuracy note:** The `claude-cli` provider shells out to the `claude` CLI, which loads local context (CLAUDE.md files, project memory, rules) into each scoring call. This extra context may influence scores, making them less reproducible across environments compared to the API-based providers. For the most consistent results, use the `anthropic` or `openai` providers with an API key.
+
+\*\* The `openai` provider also reads these optional environment variables: `OPENAI_BASE_URL` (API base URL, overridden by `--base-url`), `OPENAI_ORG_ID` (sent as `OpenAI-Organization` header), and `OPENAI_PROJECT_ID` (sent as `OpenAI-Project` header). The org/project headers are only sent when targeting an OpenAI endpoint (e.g. `api.openai.com`, `us.api.openai.com`), not when using third-party compatible APIs.
 
 Use `--model` to override the default model and `--base-url` to point at any OpenAI-compatible endpoint (e.g. `http://localhost:11434/v1` for Ollama). If the endpoint requires a specific token limit parameter, use `--max-tokens-style` to override auto-detection:
 
