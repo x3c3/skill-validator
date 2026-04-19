@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.5]
+
+### Fixed
+
+- Fix false positive in comma-list keyword stuffing heuristic on prose
+  descriptions with inline enumeration lists ([#71]). The heuristic now
+  checks prose density (average words per segment) so that sentences with
+  enough surrounding prose are not flagged as keyword dumps.
+- Support `OPENAI_BASE_URL`, `OPENAI_ORG_ID`, and `OPENAI_PROJECT_ID`
+  environment variables for the OpenAI LLM-as-judge provider ([#70]).
+  Organization and project headers are only sent when the base URL points
+  to an OpenAI endpoint.
+
 ## [1.5.4]
 
 ### Fixed
@@ -189,6 +202,7 @@ First stable release. Includes the complete CLI and importable library packages.
 - `types` — shared data types (`Report`, `Result`, `Level`, etc.)
 - `judge.LLMClient` interface for custom LLM providers
 
+[1.5.5]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.1...v1.5.2
@@ -214,3 +228,5 @@ First stable release. Includes the complete CLI and importable library packages.
 [#60]: https://github.com/agent-ecosystem/skill-validator/issues/60
 [#62]: https://github.com/agent-ecosystem/skill-validator/pull/62
 [#63]: https://github.com/agent-ecosystem/skill-validator/issues/63
+[#70]: https://github.com/agent-ecosystem/skill-validator/issues/70
+[#71]: https://github.com/agent-ecosystem/skill-validator/issues/71
