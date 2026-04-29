@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.6]
+
+### Fixed
+
+- Improve error message when the OpenAI API returns an `incorrect_hostname`
+  error due to regional endpoint requirements ([#70]). The error now tells
+  the user to set `OPENAI_BASE_URL` or `--base-url` with the correct
+  regional host (e.g. `https://us.api.openai.com/v1`).
+
 ## [1.5.5]
 
 ### Fixed
@@ -202,6 +211,7 @@ First stable release. Includes the complete CLI and importable library packages.
 - `types` — shared data types (`Report`, `Result`, `Level`, etc.)
 - `judge.LLMClient` interface for custom LLM providers
 
+[1.5.6]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/agent-ecosystem/skill-validator/compare/v1.5.2...v1.5.3
