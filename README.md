@@ -341,6 +341,12 @@ skill-validator score evaluate --provider claude-cli <path>
 
 \*\* The `openai` provider also reads these optional environment variables: `OPENAI_BASE_URL` (API base URL, overridden by `--base-url`), `OPENAI_ORG_ID` (sent as `OpenAI-Organization` header), and `OPENAI_PROJECT_ID` (sent as `OpenAI-Project` header). The org/project headers are only sent when targeting an OpenAI endpoint (e.g. `api.openai.com`, `us.api.openai.com`), not when using third-party compatible APIs.
 
+If your OpenAI organization is bound to a regional endpoint (e.g. `us.api.openai.com` or `eu.api.openai.com`), set `OPENAI_BASE_URL` to the full regional URL including the `/v1` path:
+
+```bash
+export OPENAI_BASE_URL=https://us.api.openai.com/v1
+```
+
 Use `--model` to override the default model and `--base-url` to point at any OpenAI-compatible endpoint (e.g. `http://localhost:11434/v1` for Ollama). If the endpoint requires a specific token limit parameter, use `--max-tokens-style` to override auto-detection:
 
 | Value | Behavior |
