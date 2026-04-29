@@ -269,6 +269,37 @@ func TestOpenAIClient_OrgProjectHeaders(t *testing.T) {
 	})
 }
 
+func TestOpenAIClient_RegionalHostnameError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = fmt.Fprint(w, `{"error":{"message":"Attempted to access resource with incorrect regional hostname. Please make your request to us.api.openai.com","type":"invalid_request_error","code":"incorrect_hostname","param":null},"status":401}`)
+	}))
+	defer server.Close()
+
+	client, err := NewClient(ClientOptions{
+		Provider: "openai",
+		APIKey:   "test-key",
+		BaseURL:  server.URL,
+		Model:    "gpt-4o",
+	})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+
+	_, err = client.Complete(t.Context(), "system", "user")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "regional endpoint") {
+		t.Errorf("expected error to mention regional endpoint, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "OPENAI_BASE_URL") {
+		t.Errorf("expected error to mention OPENAI_BASE_URL, got: %v", err)
+	}
+}
+
 // rewriteTransport rewrites requests to a different target URL while
 // preserving the original Host header for testing.
 type rewriteTransport struct {

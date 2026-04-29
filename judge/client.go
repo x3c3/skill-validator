@@ -306,6 +306,16 @@ func (c *openaiClient) Complete(ctx context.Context, systemPrompt, userContent s
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		var errResp struct {
+			Error struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			} `json:"error"`
+		}
+		if json.Unmarshal(respBody, &errResp) == nil && errResp.Error.Code == "incorrect_hostname" {
+			return "", fmt.Errorf("your OpenAI organization requires a regional endpoint: %s\nSet OPENAI_BASE_URL or use --base-url to specify the correct host (e.g. https://us.api.openai.com/v1)",
+				errResp.Error.Message)
+		}
 		return "", fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(respBody))
 	}
 
